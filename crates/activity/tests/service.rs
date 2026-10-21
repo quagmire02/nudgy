@@ -100,3 +100,43 @@ fn paired_extension_turns_chrome_into_a_site() {
     service.stop();
     assert_eq!(service.recent(10).unwrap().len(), 2, "same key and data reopened, nothing added while paused");
 }
+
+/// An unreadable database (lost key, damage) is set aside with its WAL and
+/// shared-memory files, and tracking starts on a fresh one.
+#[test]
+fn unreadable_database_is_set_aside_with_its_sidecars() {
+    use nudgy_activity::{Change, Store};
+    use nudgy_shared::{ActivityEvent, ContextFlags};
+
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("activity.db");
+    // A database under some other key, left with a live WAL (as after a crash).
+    let mut other = Store::open(&path, &[1; 32]).unwrap();
+    let e = ActivityEvent { start: 0, duration: 1, foreground: Foreground::None, presence: Presence::Active, flags: ContextFlags::default() };
+    other.apply(&[Change::Insert(e)]).unwrap();
+    let snapshot = tempfile::tempdir().unwrap();
+    for name in ["activity.db", "activity.db-wal", "activity.db-shm"] {
+        std::fs::copy(dir.path().join(name), snapshot.path().join(name)).unwrap();
+    }
+    drop(other);
+
+    let config = ServiceConfig {
+        data_dir: snapshot.path().to_path_buf(),
+        ports: vec![0],
+        interval: Duration::from_millis(50),
+        private_apps: vec![],
+    };
+    let mut service = ActivityService::start(config, Box::new(ChromeInFront)).expect("starts fresh");
+    std::thread::sleep(Duration::from_millis(200));
+    service.stop();
+    assert!(!service.recent(10).unwrap().is_empty());
+    let names: Vec<String> = std::fs::read_dir(snapshot.path())
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    let aside: Vec<&String> = names.iter().filter(|n| n.ends_with(".db") && n.contains("unreadable")).collect();
+    assert_eq!(aside.len(), 1, "{names:?}");
+    // Nothing was lost: the old database, WAL included, opens with its own key.
+    let old = Store::open(&snapshot.path().join(aside[0]), &[1; 32]).expect("old data intact");
+    assert_eq!(old.recent(10).unwrap().len(), 1);
+}

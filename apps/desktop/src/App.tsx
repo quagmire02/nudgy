@@ -1,10 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import type { ActivityEvent, ExtensionStatus } from "@nudgy/shared";
+import type { ActivityEvent, CharacterSize, ExtensionStatus, Settings, Tone, TriggerKind } from "@nudgy/shared";
 import "./App.css";
 
-// Developer panel for milestones 1-2: shows what the watchers record.
-// The tray, overlay and onboarding replace it in later milestones.
+// The main window. Session controls arrive with the engine (milestone 3),
+// onboarding with the installer (milestone 8).
+
+const TEST_MOMENTS: [TriggerKind, string][] = [
+  ["session_start", "Session start"],
+  ["drift_first", "Drift nudge"],
+  ["drift_escalate", "Escalation"],
+  ["drift_question", "Soft question"],
+  ["return_to_work", "Back to work"],
+  ["streak45", "45-min streak"],
+  ["break_start", "Break"],
+  ["break_over", "Break over"],
+  ["snooze_ack", "Snooze"],
+  ["reminder_due", "Reminder"],
+  ["session_end", "Session end"],
+  ["late_night", "Late night"],
+];
 
 function label(event: ActivityEvent): string {
   const f = event.foreground;
@@ -29,11 +44,13 @@ function flags(event: ActivityEvent): string {
   return out.join(" · ");
 }
 
-function seconds(ms: number): string {
+function duration(ms: number): string {
   return ms < 60_000 ? `${Math.round(ms / 1000)} s` : `${Math.floor(ms / 60_000)} min ${Math.round((ms % 60_000) / 1000)} s`;
 }
 
 function App() {
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [pandaHidden, setPandaHidden] = useState(false);
   const [current, setCurrent] = useState<ActivityEvent | null>(null);
   const [recent, setRecent] = useState<ActivityEvent[]>([]);
   const [extension, setExtension] = useState<ExtensionStatus | null>(null);
@@ -52,13 +69,21 @@ function App() {
   }, []);
 
   useEffect(() => {
+    void invoke<Settings>("get_settings").then(setSettings);
+    void invoke<boolean>("panda_hidden").then(setPandaHidden);
     void refresh();
     const timer = setInterval(refresh, 2000);
     return () => clearInterval(timer);
   }, [refresh]);
 
-  const togglePause = async () => setPaused(await invoke<boolean>("set_tracking_paused", { paused: !paused }));
-  const connect = async () => setExtension(await invoke<ExtensionStatus>("connect_browser"));
+  const update = async (patch: Partial<Settings>) => {
+    if (!settings) return;
+    setSettings(await invoke<Settings>("update_settings", { settings: { ...settings, ...patch } }));
+  };
+  const togglePanda = async () => {
+    await invoke("set_panda_hidden", { hidden: !pandaHidden });
+    setPandaHidden(!pandaHidden);
+  };
 
   return (
     <main className="container">
@@ -66,23 +91,65 @@ function App() {
       {error && <p className="error">{error}</p>}
 
       <section>
+        <h2>Panda</h2>
+        {settings && (
+          <div className="controls">
+            <label>
+              <input type="checkbox" checked={!pandaHidden} onChange={togglePanda} /> Show the panda
+            </label>
+            <label>
+              <input type="checkbox" checked={settings.quietMode} onChange={(e) => update({ quietMode: e.target.checked })} /> Quiet
+              mode (bubble only) <span className="muted">Ctrl+Alt+Q</span>
+            </label>
+            <label>
+              Size{" "}
+              <select value={settings.characterSize} onChange={(e) => update({ characterSize: e.target.value as CharacterSize })}>
+                <option value="s">Small</option>
+                <option value="m">Medium</option>
+                <option value="l">Large</option>
+              </select>
+            </label>
+            <label>
+              Tone{" "}
+              <select value={settings.tone} onChange={(e) => update({ tone: e.target.value as Tone })}>
+                <option value="gentle">Gentle</option>
+                <option value="coach">Coach</option>
+                <option value="savage">Savage</option>
+              </select>
+            </label>
+          </div>
+        )}
+        <p className="muted">Drag the panda to move it. It hides during calls, fullscreen and presentations.</p>
+      </section>
+
+      <section>
+        <h2>Test the panda</h2>
+        <div className="buttons">
+          {TEST_MOMENTS.map(([kind, name]) => (
+            <button key={kind} onClick={() => invoke("demo_moment", { kind })}>
+              {name}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section>
         <h2>Now</h2>
         {current ? (
           <p className="now">
-            <strong>{label(current)}</strong> for {seconds(current.duration)} <span className="muted">{flags(current)}</span>
+            <strong>{label(current)}</strong> for {duration(current.duration)} <span className="muted">{flags(current)}</span>
           </p>
         ) : (
           <p className="muted">{paused ? "Tracking paused." : "Waiting for the first reading…"}</p>
         )}
-        <button onClick={togglePause}>{paused ? "Resume tracking" : "Pause tracking"}</button>
-      </section>
-
-      <section>
-        <h2>Recent</h2>
+        <button onClick={async () => setPaused(await invoke<boolean>("set_tracking_paused", { paused: !paused }))}>
+          {paused ? "Resume tracking" : "Pause tracking"}
+        </button>
+        <h3>Recent</h3>
         <ul>
           {recent.map((e) => (
             <li key={`${e.start}`}>
-              {label(e)} <span className="muted">{seconds(e.duration)} {flags(e)}</span>
+              {label(e)} <span className="muted">{duration(e.duration)} {flags(e)}</span>
             </li>
           ))}
         </ul>
@@ -90,14 +157,14 @@ function App() {
 
       <section>
         <h2>Browser</h2>
-        {extension && !extension.listening && <p className="error">No local port was free for the browser extension; browsers count as plain apps.</p>}
-        {extension && extension.browsers.length > 0 && (
-          <p>Connected: {extension.browsers.map((b) => b.browser).join(", ")}</p>
+        {extension && !extension.listening && (
+          <p className="error">No local port was free for the browser extension; browsers count as plain apps.</p>
         )}
+        {extension && extension.browsers.length > 0 && <p>Connected: {extension.browsers.map((b) => b.browser).join(", ")}</p>}
         {extension?.pairingOpenUntil ? (
           <p className="muted">Pairing is open: click Connect in the Nudgy extension.</p>
         ) : (
-          <button onClick={connect}>Connect browser</button>
+          <button onClick={async () => setExtension(await invoke<ExtensionStatus>("connect_browser"))}>Connect browser</button>
         )}
       </section>
     </main>

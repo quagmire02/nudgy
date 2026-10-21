@@ -72,3 +72,26 @@ button {
   font-weight: 600;
   cursor: pointer;
 }
+
+h3 {
+  margin: 16px 0 6px;
+  font-size: 14px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  align-items: center;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+select {
+  font: inherit;
+  padding: 2px 4px;
+}

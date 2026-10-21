@@ -32,6 +32,15 @@
       <path d="M63 161Q78 151 94 158M146 158Q162 151 177 161" fill="none" stroke="#97a3b3" stroke-width="3" stroke-linecap="round"/>
     </g>
 
+    <!-- reminder: a little scroll, held in the left paw -->
+    <g class="fx-scroll" display="none" transform="rotate(-8 120 206)" stroke="#2b2b33" stroke-width="2.5" stroke-linejoin="round">
+      <rect x="96" y="194" width="50" height="26" rx="3" fill="#fff4d6"/>
+      <rect x="91" y="191" width="8" height="32" rx="4" fill="#e3b04b"/>
+      <rect x="143" y="191" width="8" height="32" rx="4" fill="#e3b04b"/>
+      <path d="M104 202h32M104 208h26M104 214h18" stroke="#b9a77a" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="98" cy="210" r="10" fill="#2b2b33" stroke="none"/>
+    </g>
+
     <!-- feet out in front, paw pads up -->
     <g class="feet">
       <ellipse cx="84" cy="228" rx="24" ry="18" fill="#2b2b33"/>

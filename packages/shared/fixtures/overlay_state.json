@@ -1,0 +1,4 @@
+[
+  { "visible": true, "base": "idle_dozing", "size": "m", "quietMode": false },
+  { "visible": false, "base": "snoozed", "size": "s", "quietMode": true }
+]

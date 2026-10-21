@@ -17,6 +17,9 @@ import type { SpokenLine } from "./SpokenLine";
 import type { ReminderDraft } from "./ReminderDraft";
 import type { Reminder } from "./Reminder";
 import type { Settings } from "./Settings";
+import type { OverlayState } from "./OverlayState";
+import type { Moment } from "./Moment";
+import type { HitRect } from "./HitRect";
 
 export const activityEvents: ActivityEvent[] = [
   {
@@ -605,5 +608,61 @@ export const settings: Settings[] = [
     "tone": "coach",
     "trackingPaused": false,
     "voice": "sapi:default"
+  }
+];
+
+export const overlayStates: OverlayState[] = [
+  {
+    "base": "idle_dozing",
+    "quietMode": false,
+    "size": "m",
+    "visible": true
+  },
+  {
+    "base": "snoozed",
+    "quietMode": true,
+    "size": "s",
+    "visible": false
+  }
+];
+
+export const moments: Moment[] = [
+  {
+    "line": {
+      "source": "canned",
+      "speak": true,
+      "text": "I was half asleep and even I noticed. Six minutes of Instagram.",
+      "triggerId": "t-0001"
+    },
+    "trigger": {
+      "aiEligible": true,
+      "animation": "alert",
+      "at": 1792577592000,
+      "context": {
+        "app": "instagram.com",
+        "category": "social",
+        "goal": "Thesis chapter 3",
+        "minutes": 6,
+        "nudgeLevel": 1
+      },
+      "id": "t-0001",
+      "kind": "drift_first",
+      "replies": [
+        "back_to_work",
+        "take_break",
+        "actually_working"
+      ],
+      "sessionId": "0b7f6f3e-6a3c-4a8e-9a55-5d1c2f1e9b10",
+      "tone": "coach"
+    }
+  }
+];
+
+export const hitRects: HitRect[] = [
+  {
+    "height": 96.0,
+    "width": 88.6,
+    "x": 212.5,
+    "y": 196.0
   }
 ];

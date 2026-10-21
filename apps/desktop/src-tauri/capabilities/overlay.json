@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "overlay",
+  "description": "The panda overlay: listen for state and moments, drag the window",
+  "windows": ["overlay"],
+  "permissions": ["core:default", "core:window:allow-start-dragging"]
+}

@@ -66,11 +66,18 @@ impl ActivityService {
         let path = config.data_dir.join("activity.db");
         let store = match Store::open(&path, &key) {
             Err(StoreError::WrongKey) => {
-                // The key file was lost: the old file is unreadable, so set it
-                // aside rather than fail forever, and start a fresh database.
-                let aside = path.with_extension(format!("unreadable-{}.db", now_ms()));
+                // Lost key file or a damaged database: set it aside rather than
+                // fail forever, and start fresh. The WAL and shared-memory
+                // sidecars go too; left behind, SQLite would replay the old WAL
+                // into the new file and it would be unreadable as well.
+                let aside = config.data_dir.join(format!("activity.unreadable-{}.db", now_ms()));
                 log::warn!("activity.db can't be opened with the current key; moved to {}", aside.display());
-                fs::rename(&path, aside)?;
+                for suffix in ["", "-wal", "-shm"] {
+                    let from = PathBuf::from(format!("{}{suffix}", path.display()));
+                    if from.exists() {
+                        fs::rename(&from, format!("{}{suffix}", aside.display()))?;
+                    }
+                }
                 Store::open(&path, &key)?
             }
             other => other?,

@@ -1,0 +1,16 @@
+[
+  {
+    "trigger": {
+      "id": "t-0001",
+      "kind": "drift_first",
+      "at": 1792577592000,
+      "sessionId": "0b7f6f3e-6a3c-4a8e-9a55-5d1c2f1e9b10",
+      "tone": "coach",
+      "context": { "goal": "Thesis chapter 3", "app": "instagram.com", "category": "social", "minutes": 6, "nudgeLevel": 1 },
+      "animation": "alert",
+      "replies": ["back_to_work", "take_break", "actually_working"],
+      "aiEligible": true
+    },
+    "line": { "triggerId": "t-0001", "text": "I was half asleep and even I noticed. Six minutes of Instagram.", "source": "canned", "speak": true }
+  }
+]

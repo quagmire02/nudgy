@@ -1,0 +1,101 @@
+/* The panda's animation states. Layers in character/panda.svg are hidden by
+   default (display="none") and switched on per state; CSS beats the attribute.
+   Placeholder for the commissioned Rive file; state names match CharacterState. */
+
+.panda { display: block; height: 100%; width: auto; overflow: visible; }
+
+/* Always: slow breathing and a sliding sweat drop. */
+.panda .torso { transform-origin: 120px 240px; animation: breathe 4s ease-in-out infinite; }
+.panda .sweat { animation: sweat 3.5s ease-in infinite; }
+.panda .whole { transition: transform 0.55s cubic-bezier(0.5, 0, 0.75, 0); }
+@keyframes breathe { 50% { transform: scale(1.015, 1.03); } }
+@keyframes sweat { 0% { transform: translateY(-4px); opacity: 0; } 20% { opacity: 1; } 80% { transform: translateY(6px); opacity: 1; } 100% { transform: translateY(9px); opacity: 0; } }
+
+/* idle_dozing: blinks, nods off, jolts awake. */
+.s-idle_dozing .head-anim { transform-origin: 120px 160px; animation: doze 7s ease-in-out infinite; }
+.s-idle_dozing .eye-half { animation: eHalf 7s linear infinite; }
+.s-idle_dozing .eye-closed { display: inline; opacity: 0; animation: eClosed 7s linear infinite; }
+.s-idle_dozing .eye-open { display: inline; opacity: 0; animation: eOpen 7s linear infinite; }
+@keyframes doze { 0%, 50% { transform: none; } 64% { transform: translateY(6px) rotate(5deg); } 68% { transform: translateY(-4px) rotate(-2deg); } 74%, 100% { transform: none; } }
+@keyframes eHalf { 0%, 20.9% { opacity: 1; } 21%, 23.9% { opacity: 0; } 24%, 51.9% { opacity: 1; } 52%, 75.9% { opacity: 0; } 76%, 100% { opacity: 1; } }
+@keyframes eClosed { 0%, 20.9% { opacity: 0; } 21%, 23.9% { opacity: 1; } 24%, 51.9% { opacity: 0; } 52%, 67.9% { opacity: 1; } 68%, 100% { opacity: 0; } }
+@keyframes eOpen { 0%, 67.9% { opacity: 0; } 68%, 75.9% { opacity: 1; } 76%, 100% { opacity: 0; } }
+
+/* alert and escalate: eyes snap open, "!" pops. */
+.s-alert .eye-half, .s-escalate .eye-half, .s-reminder .eye-half { display: none; }
+.s-alert .eye-open, .s-escalate .eye-open, .s-reminder .eye-open { display: inline; }
+.s-alert .fx-alert, .s-escalate .fx-alert { display: inline; transform-origin: 200px 62px; animation: pop 0.5s ease-out both; }
+.s-alert .whole { transform-origin: 120px 240px; animation: hopOnce 0.6s ease-out, sway 3s ease-in-out 0.6s infinite; }
+@keyframes pop { 0% { transform: scale(0); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@keyframes hopOnce { 0% { transform: none; } 35% { transform: translateY(-12px); } 70% { transform: scale(1.03, 0.97); } 100% { transform: none; } }
+@keyframes sway { 25% { transform: rotate(-1.5deg); } 75% { transform: rotate(1.5deg); } }
+
+/* escalate: taps the sword on the ground, sweats harder. */
+.s-escalate .sword, .s-escalate .arm-r { animation: tap 0.45s ease-in-out infinite; }
+.s-escalate .sweat { transform-box: fill-box; transform-origin: center; animation: sweatBig 1.2s ease-in infinite; }
+.s-escalate .whole { transform-origin: 120px 240px; animation: jitter 0.45s ease-in-out infinite; }
+@keyframes tap { 50% { transform: translateY(-7px); } }
+@keyframes sweatBig { 0% { transform: scale(1.5) translateY(-3px); opacity: 0.4; } 50% { opacity: 1; } 100% { transform: scale(1.5) translateY(6px); opacity: 0; } }
+@keyframes jitter { 25% { transform: rotate(-1deg); } 75% { transform: rotate(1deg); } }
+
+/* celebrate: sleepy hop, happy eyes, sparkles. */
+.s-celebrate .eye-half, .s-celebrate .mouth-rest { display: none; }
+.s-celebrate .eye-happy, .s-celebrate .mouth-smile, .s-celebrate .fx-spark { display: inline; }
+.s-celebrate .blush { opacity: 1; }
+.s-celebrate .whole { transform-origin: 120px 240px; animation: hop 1.6s ease-in-out infinite; }
+.s-celebrate .fx-spark path { transform-box: fill-box; transform-origin: center; animation: twinkle 1.6s ease-in-out infinite; }
+.s-celebrate .sp2 { animation-delay: -0.4s !important; }
+.s-celebrate .sp3 { animation-delay: -0.8s !important; }
+.s-celebrate .sp4 { animation-delay: -1.2s !important; }
+@keyframes hop { 0%, 100% { transform: none; } 15% { transform: scale(1.04, 0.95); } 35% { transform: translateY(-16px) scale(0.98, 1.03); } 55% { transform: none; } 62% { transform: scale(1.03, 0.97); } 70% { transform: none; } }
+@keyframes twinkle { 0%, 100% { transform: scale(0.4); opacity: 0.3; } 50% { transform: scale(1.1) rotate(20deg); opacity: 1; } }
+
+/* on_break: big yawn and stretch. */
+.s-on_break .eye-half, .s-on_break .mouth-rest, .s-on_break .sweat { display: none; }
+.s-on_break .eye-closed { display: inline; }
+.s-on_break .mouth-yawn { display: inline; transform-origin: 120px 140px; animation: yawn 4s ease-in-out infinite; }
+.s-on_break .head-anim { transform-origin: 120px 160px; animation: stretchHead 4s ease-in-out infinite; }
+.s-on_break .torso { animation: stretch 4s ease-in-out infinite; }
+@keyframes yawn { 0%, 100% { transform: scale(0.5, 0.3); } 30%, 60% { transform: none; } }
+@keyframes stretchHead { 0%, 100% { transform: none; } 30%, 60% { transform: translateY(-6px) rotate(-4deg); } }
+@keyframes stretch { 0%, 100% { transform: none; } 30%, 60% { transform: scale(1.02, 1.05); } }
+
+/* snoozed: visor down, Zzz. */
+.s-snoozed .visor-up, .s-snoozed .eyes, .s-snoozed .patches, .s-snoozed .sweat { display: none; }
+.s-snoozed .visor-down, .s-snoozed .fx-zzz { display: inline; }
+.s-snoozed .torso { animation-duration: 6s; }
+.s-snoozed .head-anim { transform-origin: 120px 160px; animation: snoozeHead 6s ease-in-out infinite; }
+.s-snoozed .fx-zzz text { animation: zfloat 3s ease-in infinite; }
+.s-snoozed .z2 { animation-delay: -1s; }
+.s-snoozed .z3 { animation-delay: -2s; }
+@keyframes snoozeHead { 50% { transform: translateY(3px) rotate(2deg); } }
+@keyframes zfloat { 0% { opacity: 0; transform: translate(0, 8px); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(10px, -14px); } }
+
+/* reminder: unrolls a tiny scroll. */
+.s-reminder .fx-scroll { display: inline; transform-box: fill-box; transform-origin: left center; animation: unroll 0.5s ease-out both; }
+.s-reminder .mouth-rest { display: none; }
+.s-reminder .mouth-smile { display: inline; }
+.s-reminder .whole { transform-origin: 120px 240px; animation: hopOnce 0.6s ease-out; }
+@keyframes unroll { from { transform: scaleX(0.2); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* return: pops back up, satisfied nod. */
+.s-return .whole { animation: comeBack 0.6s ease-out both; }
+.s-return .eye-half { display: none; }
+.s-return .eye-happy { display: inline; }
+.s-return .head-anim { transform-origin: 120px 160px; animation: nod 0.8s ease-in-out 0.6s 2; }
+@keyframes comeBack { from { transform: translateY(120px); } to { transform: none; } }
+@keyframes nod { 50% { transform: translateY(4px) rotate(3deg); } }
+
+/* hidden: ducks fully out of view (the window hides right after). */
+.s-hidden .whole { transform: translateY(280px); }
+.s-hidden .torso, .s-hidden .sweat { animation: none; }
+
+/* talking: the mouth moves while a line is spoken. */
+.talking:not(.s-snoozed):not(.s-on_break) .mouth-rest,
+.talking:not(.s-snoozed):not(.s-on_break) .mouth-smile { display: none; }
+.talking:not(.s-snoozed):not(.s-on_break) .mouth-o { display: inline; transform-origin: 120px 146px; animation: talk 0.16s ease-in-out infinite alternate; }
+@keyframes talk { from { transform: scaleY(0.3); } to { transform: scaleY(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .panda, .panda * { animation: none !important; transition: none !important; }
+}

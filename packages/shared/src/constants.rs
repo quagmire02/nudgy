@@ -30,8 +30,11 @@ pub const TITLE_MAX_CHARS: u32 = 120;
 
 /// Raw activity events older than this are deleted; daily totals are kept.
 pub const RAW_EVENT_RETENTION_DAYS: u32 = 30;
-/// Local port the browser extension posts heartbeats to (127.0.0.1 only).
-pub const EXTENSION_PORT: u16 = 47615;
+/// Local ports for the browser extension (127.0.0.1 only), in order of
+/// preference. The app listens on the first it can bind; the extension finds it
+/// with `GET /v1/hello`. Several, because security and VPN software silently
+/// reserves whole port ranges on some PCs (44700-48700 on the dev machine).
+pub const EXTENSION_PORTS: [u16; 3] = [27615, 37615, 17615];
 pub const API_VERSION: &str = "v1";
 
 /// Never recorded beyond "private". Users can add more in settings.
@@ -64,7 +67,7 @@ pub fn typescript() -> String {
     num("APP_MAX_CHARS", APP_MAX_CHARS.to_string());
     num("TITLE_MAX_CHARS", TITLE_MAX_CHARS.to_string());
     num("RAW_EVENT_RETENTION_DAYS", RAW_EVENT_RETENTION_DAYS.to_string());
-    num("EXTENSION_PORT", EXTENSION_PORT.to_string());
+    num("EXTENSION_PORTS", format!("{EXTENSION_PORTS:?} as const"));
     num("API_VERSION", format!("{API_VERSION:?}"));
     num("DEFAULT_PRIVATE_APPS", format!("{DEFAULT_PRIVATE_APPS:?} as const"));
     out

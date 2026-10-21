@@ -1,0 +1,13 @@
+[package]
+name = "nudgy-tomcrypt"
+description = "libtomcrypt, compiled as SQLCipher's crypto provider (see .cargo/config.toml)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+links = "crypto"
+build = "build.rs"
+
+[build-dependencies]
+cc = "1"
+# Pinned: third_party/libtomcrypt/headers must match these sources (checked in build.rs).
+sqlcipher-src = "=419.0.6"

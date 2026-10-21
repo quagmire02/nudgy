@@ -1,0 +1,12 @@
+# SQLCipher without OpenSSL.
+#
+# libsqlite3-sys's `bundled-sqlcipher` feature only knows OpenSSL, which on
+# Windows/MSVC means a native Perl to build it. Instead we point its OpenSSL
+# include path at libtomcrypt's headers, select SQLCipher's libtomcrypt
+# provider, and let crates/tomcrypt compile libtomcrypt into `libcrypto.lib`,
+# which satisfies the `libcrypto` link libsqlite3-sys asks for.
+# Side effect: nothing else in this workspace may use openssl-sys.
+[env]
+OPENSSL_INCLUDE_DIR = { value = "third_party/libtomcrypt/headers", relative = true }
+OPENSSL_LIB_DIR = { value = "third_party/libtomcrypt", relative = true }
+LIBSQLITE3_FLAGS = "-DSQLCIPHER_CRYPTO_LIBTOMCRYPT"

@@ -5,7 +5,10 @@
   "scripts": {
     "contracts": "cargo test -p nudgy-shared && pnpm --filter @nudgy/shared typecheck",
     "contracts:check": "pnpm contracts && git diff --exit-code -- packages/shared/ts/generated",
+    "test": "pnpm contracts && cargo test -p nudgy-activity && pnpm --filter @nudgy/extension test",
     "typecheck": "pnpm -r typecheck",
+    "record": "cargo run -p nudgy-activity --example record --",
+    "build:extension": "pnpm --filter @nudgy/extension build",
     "dev": "pnpm --filter @nudgy/desktop tauri dev"
   }
 }

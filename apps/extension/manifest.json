@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Nudgy",
+  "version": "0.1.0",
+  "description": "Tells the Nudgy desktop app which site is in front. Only the domain and tab title, only to this PC.",
+  "permissions": ["tabs", "alarms", "storage"],
+  "host_permissions": ["http://127.0.0.1/*"],
+  "background": { "service_worker": "background.js", "scripts": ["background.js"] },
+  "action": { "default_title": "Nudgy", "default_popup": "popup.html" },
+  "incognito": "spanning",
+  "browser_specific_settings": { "gecko": { "id": "extension@nudgy.app", "strict_min_version": "121.0" } }
+}

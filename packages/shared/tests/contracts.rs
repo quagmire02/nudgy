@@ -64,7 +64,7 @@ fn contracts_round_trip_and_export() {
         ($($t:ty),* $(,)?) => { $( <$t>::export_all(&cfg).expect(stringify!($t)); )* };
     }
     export!(
-        ActivityEvent, BrowserHeartbeat, Classification, Override, Session, Trigger, UserAction,
+        ActivityEvent, BrowserHeartbeat, ExtensionStatus, Classification, Override, Session, Trigger, UserAction,
         LineRequest, LineResponse, ApiError, RegisterRequest, RegisterResponse, SpokenLine,
         ReminderDraft, Reminder, Settings,
     );
@@ -72,6 +72,7 @@ fn contracts_round_trip_and_export() {
     let fixtures = [
         check_fixture::<ActivityEvent>("activity_event.json", "activityEvents", &cfg),
         check_fixture::<BrowserHeartbeat>("browser_heartbeat.json", "browserHeartbeats", &cfg),
+        check_fixture::<ExtensionStatus>("extension_status.json", "extensionStatuses", &cfg),
         check_fixture::<Classification>("classification.json", "classifications", &cfg),
         check_fixture::<Override>("override.json", "overrides", &cfg),
         check_fixture::<Session>("session.json", "sessions", &cfg),

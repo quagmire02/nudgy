@@ -1,0 +1,5 @@
+[
+  { "listening": true, "pairingOpenUntil": 1792577100000, "browsers": [] },
+  { "listening": true, "browsers": [ { "browser": "chrome", "lastSeen": 1792576810000 }, { "browser": "edge", "lastSeen": 1792576805000 } ] },
+  { "listening": false, "browsers": [] }
+]

@@ -115,19 +115,47 @@ impl ActivityEvent {
     }
 }
 
-/// What the browser extension posts to `http://127.0.0.1:{EXTENSION_PORT}/v1/heartbeat`
-/// every few seconds and on every tab change. Requests carry the per-install
-/// secret in the `X-Nudgy-Secret` header. Incognito tabs send
-/// `incognito: true` with an empty domain and no title.
+/// What the browser extension posts to `http://127.0.0.1:{port}/v1/heartbeat`
+/// (`port` from `EXTENSION_PORTS`, see `GET /v1/hello`)
+/// on every tab or focus change, and every 30 seconds as a keep-alive.
+/// Requests carry the per-install secret in the `X-Nudgy-Secret` header.
+///
+/// - Incognito tab: `incognito: true`, empty domain, no title.
+/// - Empty domain with `incognito: false`: no window the extension can see is
+///   focused (the browser lost focus, or an incognito window it can't see is in
+///   front). If the browser is still the foreground app, the app records `Private`.
+/// - Non-web pages report `file` or `browser` as the domain.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct BrowserHeartbeat {
     /// `chrome`, `edge`, `firefox`, `brave`, `opera`.
     pub browser: String,
+    /// Hostname without `www.`, e.g. `docs.google.com`. Never a path or query.
     pub domain: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub title: Option<String>,
     pub incognito: bool,
     pub at: UnixMs,
+}
+
+/// Browser extension connection state, for the onboarding and settings UI.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+pub struct ExtensionStatus {
+    /// False when the local port was taken; browsers then count as plain apps.
+    pub listening: bool,
+    /// While set, the next extension to ask receives the pairing secret.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pairing_open_until: Option<UnixMs>,
+    /// Browsers that sent a valid heartbeat since the app started.
+    pub browsers: Vec<SeenBrowser>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct SeenBrowser {
+    pub browser: String,
+    pub last_seen: UnixMs,
 }

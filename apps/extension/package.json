@@ -1,0 +1,21 @@
+{
+  "name": "@nudgy/extension",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Tells the Nudgy desktop app which site is in front: domain and tab title only, only to this PC.",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@nudgy/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.0",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "~6.0.3"
+  }
+}

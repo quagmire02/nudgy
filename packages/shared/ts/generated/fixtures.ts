@@ -2,6 +2,7 @@
 
 import type { ActivityEvent } from "./ActivityEvent";
 import type { BrowserHeartbeat } from "./BrowserHeartbeat";
+import type { ExtensionStatus } from "./ExtensionStatus";
 import type { Classification } from "./Classification";
 import type { Override } from "./Override";
 import type { Session } from "./Session";
@@ -113,7 +114,7 @@ export const browserHeartbeats: BrowserHeartbeat[] = [
   {
     "at": 1792576800000,
     "browser": "chrome",
-    "domain": "www.youtube.com",
+    "domain": "youtube.com",
     "incognito": false,
     "title": "Lecture 7: Dynamic Programming - YouTube"
   },
@@ -122,6 +123,44 @@ export const browserHeartbeats: BrowserHeartbeat[] = [
     "browser": "edge",
     "domain": "",
     "incognito": true
+  },
+  {
+    "at": 1792576810000,
+    "browser": "chrome",
+    "domain": "",
+    "incognito": false
+  },
+  {
+    "at": 1792576815000,
+    "browser": "firefox",
+    "domain": "browser",
+    "incognito": false,
+    "title": "New Tab"
+  }
+];
+
+export const extensionStatuses: ExtensionStatus[] = [
+  {
+    "browsers": [],
+    "listening": true,
+    "pairingOpenUntil": 1792577100000
+  },
+  {
+    "browsers": [
+      {
+        "browser": "chrome",
+        "lastSeen": 1792576810000
+      },
+      {
+        "browser": "edge",
+        "lastSeen": 1792576805000
+      }
+    ],
+    "listening": true
+  },
+  {
+    "browsers": [],
+    "listening": false
   }
 ];
 

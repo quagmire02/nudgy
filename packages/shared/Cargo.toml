@@ -1,0 +1,11 @@
+[package]
+name = "nudgy-shared"
+description = "Contracts shared by every Nudgy module: Rust types, TS bindings, wire fixtures."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+ts-rs = "12.0.1"

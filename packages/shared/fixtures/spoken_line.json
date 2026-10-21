@@ -1,0 +1,4 @@
+[
+  { "triggerId": "t-0001", "text": "I was half asleep and even I noticed. Six minutes of Instagram.", "source": "canned", "speak": true },
+  { "triggerId": "t-0002", "text": "45 minutes straight. Too tired to clap, but I'm proud of you.", "source": "ai", "speak": false }
+]

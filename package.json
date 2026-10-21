@@ -1,0 +1,11 @@
+{
+  "name": "nudgy",
+  "private": true,
+  "packageManager": "pnpm@10.34.7",
+  "scripts": {
+    "contracts": "cargo test -p nudgy-shared && pnpm --filter @nudgy/shared typecheck",
+    "contracts:check": "pnpm contracts && git diff --exit-code -- packages/shared/ts/generated",
+    "typecheck": "pnpm -r typecheck",
+    "dev": "pnpm --filter @nudgy/desktop tauri dev"
+  }
+}

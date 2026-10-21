@@ -1,0 +1,45 @@
+[
+  {
+    "id": "0b7f6f3e-6a3c-4a8e-9a55-5d1c2f1e9b10",
+    "goal": { "text": "Thesis chapter 3", "minutes": 120 },
+    "tone": "coach",
+    "state": "nudged",
+    "started": 1792576800000,
+    "nudgeLevel": 1,
+    "snoozes": 0,
+    "stats": {
+      "focused": 2700000, "neutral": 120000, "distracting": 480000, "onBreak": 0, "idle": 60000,
+      "drift": 480000, "currentStreak": 0, "longestStreak": 2700000, "nudges": 1,
+      "topDistractions": [ { "key": "web:instagram.com", "name": "instagram.com", "category": "social", "duration": 480000 } ]
+    }
+  },
+  {
+    "id": "5c2d9a7e-1f0b-4c3a-8e6d-2b9f4a1c7e33",
+    "goal": { "text": "Study DSA", "minutes": 50 },
+    "tone": "gentle",
+    "state": "muted",
+    "muteReason": "snooze",
+    "started": 1792576800000,
+    "snoozeUntil": 1792578600000,
+    "nudgeLevel": 2,
+    "snoozes": 1,
+    "stats": {
+      "focused": 900000, "neutral": 0, "distracting": 600000, "onBreak": 300000, "idle": 0,
+      "drift": 0, "currentStreak": 0, "longestStreak": 900000, "nudges": 2, "topDistractions": []
+    }
+  },
+  {
+    "id": "9e1a4b6c-3d2f-4e5a-8b7c-6d5e4f3a2b1c",
+    "goal": { "text": "Lab report", "minutes": 60 },
+    "tone": "savage",
+    "state": "ended",
+    "started": 1792576800000,
+    "ended": 1792580400000,
+    "nudgeLevel": 0,
+    "snoozes": 0,
+    "stats": {
+      "focused": 3480000, "neutral": 120000, "distracting": 0, "onBreak": 0, "idle": 0,
+      "drift": 0, "currentStreak": 3480000, "longestStreak": 3480000, "nudges": 0, "topDistractions": []
+    }
+  }
+]

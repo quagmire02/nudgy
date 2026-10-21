@@ -1,0 +1,44 @@
+[
+  {
+    "start": 1792576800000,
+    "duration": 312000,
+    "foreground": { "type": "app", "appId": "code.exe", "appName": "Visual Studio Code", "title": "chapter3.tex - thesis" },
+    "presence": "active",
+    "flags": { "fullscreen": false, "presenting": false, "micInUse": false }
+  },
+  {
+    "start": 1792577112000,
+    "duration": 480000,
+    "foreground": { "type": "web", "browser": "chrome.exe", "domain": "instagram.com", "title": "Instagram" },
+    "presence": "active",
+    "flags": { "fullscreen": false, "presenting": false, "micInUse": false }
+  },
+  {
+    "start": 1792577592000,
+    "duration": 60000,
+    "foreground": { "type": "app", "appId": "winword.exe", "appName": "Microsoft Word" },
+    "presence": "idle",
+    "flags": { "fullscreen": false, "presenting": false, "micInUse": false }
+  },
+  {
+    "start": 1792577652000,
+    "duration": 900000,
+    "foreground": { "type": "app", "appId": "teams.exe", "appName": "Microsoft Teams", "title": "Group meeting" },
+    "presence": "active",
+    "flags": { "fullscreen": false, "presenting": false, "micInUse": true }
+  },
+  {
+    "start": 1792578552000,
+    "duration": 20000,
+    "foreground": { "type": "private" },
+    "presence": "active",
+    "flags": { "fullscreen": false, "presenting": false, "micInUse": false }
+  },
+  {
+    "start": 1792578572000,
+    "duration": 1800000,
+    "foreground": { "type": "none" },
+    "presence": "locked",
+    "flags": { "fullscreen": false, "presenting": false, "micInUse": false }
+  }
+]

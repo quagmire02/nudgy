@@ -1,0 +1,4 @@
+[
+  { "code": "quota_exceeded", "message": "Daily AI line limit reached.", "quota": { "used": 20, "limit": 20, "resetsAt": 1792605600000 } },
+  { "code": "unauthorized", "message": "Missing or invalid device token." }
+]

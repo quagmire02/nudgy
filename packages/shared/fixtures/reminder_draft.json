@@ -1,0 +1,4 @@
+[
+  { "title": "Quiz", "place": "Room 7B", "eventAt": 1792900800000, "allDay": false, "remindAt": [1792850400000, 1792897200000], "warnings": [], "parsedBy": "local" },
+  { "title": "Assignment 2 due", "eventAt": 1793404800000, "allDay": true, "remindAt": [1793368800000], "warnings": ["ambiguous_day_month", "relative_date"], "parsedBy": "local" }
+]

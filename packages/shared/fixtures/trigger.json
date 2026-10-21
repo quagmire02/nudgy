@@ -1,0 +1,45 @@
+[
+  {
+    "id": "t-0001",
+    "kind": "drift_first",
+    "at": 1792577592000,
+    "sessionId": "0b7f6f3e-6a3c-4a8e-9a55-5d1c2f1e9b10",
+    "tone": "coach",
+    "context": { "goal": "Thesis chapter 3", "app": "instagram.com", "category": "social", "minutes": 6, "streak": 2, "nudgeLevel": 1 },
+    "animation": "alert",
+    "replies": ["back_to_work", "take_break", "actually_working"],
+    "aiEligible": true
+  },
+  {
+    "id": "t-0002",
+    "kind": "streak45",
+    "at": 1792579500000,
+    "sessionId": "0b7f6f3e-6a3c-4a8e-9a55-5d1c2f1e9b10",
+    "tone": "coach",
+    "context": { "goal": "Thesis chapter 3", "minutes": 45, "nudgeLevel": 0 },
+    "animation": "celebrate",
+    "replies": [],
+    "aiEligible": false
+  },
+  {
+    "id": "t-0003",
+    "kind": "deadline_nudge",
+    "at": 1792579600000,
+    "sessionId": "0b7f6f3e-6a3c-4a8e-9a55-5d1c2f1e9b10",
+    "tone": "coach",
+    "context": { "goal": "Thesis chapter 3", "app": "YouTube", "category": "video", "minutes": 5, "nudgeLevel": 1, "deadline": { "title": "Quiz", "inHours": 48 } },
+    "animation": "alert",
+    "replies": ["back_to_work", "take_break", "actually_working"],
+    "aiEligible": true
+  },
+  {
+    "id": "t-0004",
+    "kind": "late_night",
+    "at": 1792549800000,
+    "tone": "savage",
+    "context": { "nudgeLevel": 0 },
+    "animation": "idle_dozing",
+    "replies": ["dismiss"],
+    "aiEligible": false
+  }
+]

@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Armored Panda Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f2ea; --card: #fffdf8; --stage: #f1ece2; --ink: #2b2b33; --muted: #6d6a75;
+    --line: #e5ddd0; --bubble: #ffffff; --chip: #eef3e8; --chip-ink: #3f6f2f; --accent: #4f8a3c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1c1c21; --card: #24242b; --stage: #2c2c34; --ink: #ecebf0; --muted: #a4a2ae;
+      --line: #36363f; --bubble: #31313a; --chip: #2f3a2a; --chip-ink: #b8dca4; --accent: #8cc265;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1c1c21; --card: #24242b; --stage: #2c2c34; --ink: #ecebf0; --muted: #a4a2ae;
+    --line: #36363f; --bubble: #31313a; --chip: #2f3a2a; --chip-ink: #b8dca4; --accent: #8cc265;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 "Nunito", system-ui, sans-serif; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 16px 64px; }
+  header { display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: center; margin-bottom: 40px; }
+  header .hero { aspect-ratio: 240 / 260; }
+  .eyebrow { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0 0 10px; font-size: clamp(28px, 4vw, 42px); line-height: 1.1; font-weight: 900; }
+  .lede { margin: 0; max-width: 60ch; color: var(--muted); font-size: 17px; }
+  h2 { font-size: 20px; font-weight: 900; margin: 0 0 4px; }
+  .sub { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+  section { margin-top: 44px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .stage { height: 240px; border-radius: 12px; background: var(--stage); display: grid; place-items: center; overflow: hidden; }
+  .stage svg { height: 100%; width: auto; }
+  .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .meta code { font: 700 14px/1.2 ui-monospace, "Cascadia Code", Consolas, monospace; }
+  .meta span { font-size: 13px; color: var(--muted); }
+  .what { margin: 0; font-size: 14px; color: var(--muted); }
+  .bubble { position: relative; margin: 4px 0 0; padding: 10px 12px; background: var(--bubble); border: 1.5px solid var(--ink); border-radius: 14px; font-size: 14.5px; font-weight: 700; }
+  .bubble::before { content: ""; position: absolute; top: -8px; left: 28px; width: 12px; height: 12px; background: var(--bubble); border-left: 1.5px solid var(--ink); border-top: 1.5px solid var(--ink); transform: rotate(45deg); }
+  .bubble.silent { border-style: dashed; font-weight: 400; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chips span { font-size: 12.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--chip); color: var(--chip-ink); }
+
+  .sizes { display: flex; align-items: flex-end; gap: 28px; flex-wrap: wrap; padding: 24px; border-radius: 18px; border: 1px solid var(--line);
+           background: linear-gradient(135deg, #5b7fa6, #8a6fa8 55%, #c98a8a); }
+  .sizes figure { margin: 0; display: grid; justify-items: center; gap: 8px; }
+  .sizes figcaption { font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+
+  .palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .swatch { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); font-size: 13px; }
+  .swatch i { width: 34px; height: 34px; border-radius: 9px; border: 1.5px solid var(--ink); flex: none; }
+  .swatch b { display: block; font-size: 13.5px; }
+  .swatch code { color: var(--muted); font-size: 12px; }
+
+  @media (max-width: 640px) {
+    header { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    header .hero { width: 180px; }
+  }
+
+  /* ---------- panda states ---------- */
+  .panda .torso { transform-origin: 120px 240px; animation: breathe 4s ease-in-out infinite; }
+  @keyframes breathe { 50% { transform: scale(1.015, 1.03); } }
+  .panda .sweat { animation: sweat 3.5s ease-in infinite; }
+  @keyframes sweat { 0% { transform: translateY(-4px); opacity: 0; } 20% { opacity: 1; } 80% { transform: translateY(6px); opacity: 1; } 100% { transform: translateY(9px); opacity: 0; } }
+
+  /* idle_dozing: blink, nod off, jolt awake */
+  .s-idle .head-anim { transform-origin: 120px 160px; animation: doze 7s ease-in-out infinite; }
+  @keyframes doze { 0%, 50% { transform: none; } 64% { transform: translateY(6px) rotate(5deg); } 68% { transform: translateY(-4px) rotate(-2deg); } 74%, 100% { transform: none; } }
+  .s-idle .eye-half { animation: eHalf 7s linear infinite; }
+  .s-idle .eye-closed { display: inline; opacity: 0; animation: eClosed 7s linear infinite; }
+  .s-idle .eye-open { display: inline; opacity: 0; animation: eOpen 7s linear infinite; }
+  @keyframes eHalf { 0%, 20.9% { opacity: 1; } 21%, 23.9% { opacity: 0; } 24%, 51.9% { opacity: 1; } 52%, 75.9% { opacity: 0; } 76%, 100% { opacity: 1; } }
+  @keyframes eClosed { 0%, 20.9% { opacity: 0; } 21%, 23.9% { opacity: 1; } 24%, 51.9% { opacity: 0; } 52%, 67.9% { opacity: 1; } 68%, 100% { opacity: 0; } }
+  @keyframes eOpen { 0%, 67.9% { opacity: 0; } 68%, 75.9% { opacity: 1; } 76%, 100% { opacity: 0; } }
+
+  /* alert: eyes snap open, "!" pops, talks */
+  .s-alert .eye-half, .s-alert .mouth-rest { display: none; }
+  .s-alert .eye-open { display: inline; }
+  .s-alert .mouth-o { display: inline; transform-origin: 120px 146px; animation: talk .3s ease-in-out infinite alternate; }
+  .s-alert .whole { transform-origin: 120px 240px; animation: alert 2.6s ease-out infinite; }
+  .s-alert .fx-alert { display: inline; transform-origin: 200px 62px; animation: pop 2.6s ease-out infinite; }
+  @keyframes talk { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
+  @keyframes alert { 0% { transform: none; } 6% { transform: translateY(-10px); } 12% { transform: none; } 18% { transform: rotate(-2deg); } 24% { transform: rotate(2deg); } 30%, 100% { transform: none; } }
+  @keyframes pop { 0% { transform: scale(0); } 8% { transform: scale(1.25); } 14%, 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+  /* celebrate: sleepy hop, happy eyes, sparkles */
+  .s-celebrate .eye-half, .s-celebrate .mouth-rest { display: none; }
+  .s-celebrate .eye-happy, .s-celebrate .mouth-smile, .s-celebrate .fx-spark { display: inline; }
+  .s-celebrate .blush { opacity: 1; }
+  .s-celebrate .whole { transform-origin: 120px 240px; animation: hop 1.6s ease-in-out infinite; }
+  .s-celebrate .shadow { transform-origin: 122px 243px; animation: hopShadow 1.6s ease-in-out infinite; }
+  .s-celebrate .fx-spark path { transform-box: fill-box; transform-origin: center; animation: twinkle 1.6s ease-in-out infinite; }
+  .s-celebrate .sp2 { animation-delay: -.4s !important; }
+  .s-celebrate .sp3 { animation-delay: -.8s !important; }
+  .s-celebrate .sp4 { animation-delay: -1.2s !important; }
+  @keyframes hop { 0%, 100% { transform: none; } 15% { transform: scale(1.04, .95); } 35% { transform: translateY(-16px) scale(.98, 1.03); } 55% { transform: none; } 62% { transform: scale(1.03, .97); } 70% { transform: none; } }
+  @keyframes hopShadow { 35% { transform: scale(.8); opacity: .07; } }
+  @keyframes twinkle { 0%, 100% { transform: scale(.4); opacity: .3; } 50% { transform: scale(1.1) rotate(20deg); opacity: 1; } }
+
+  /* on_break: big yawn and stretch */
+  .s-break .eye-half, .s-break .mouth-rest, .s-break .sweat { display: none; }
+  .s-break .eye-closed { display: inline; }
+  .s-break .mouth-yawn { display: inline; transform-origin: 120px 140px; animation: yawn 4s ease-in-out infinite; }
+  .s-break .head-anim { transform-origin: 120px 160px; animation: stretchHead 4s ease-in-out infinite; }
+  .s-break .torso { animation: stretch 4s ease-in-out infinite; }
+  @keyframes yawn { 0%, 100% { transform: scale(.5, .3); } 30%, 60% { transform: none; } }
+  @keyframes stretchHead { 0%, 100% { transform: none; } 30%, 60% { transform: translateY(-6px) rotate(-4deg); } }
+  @keyframes stretch { 0%, 100% { transform: none; } 30%, 60% { transform: scale(1.02, 1.05); } }
+
+  /* snoozed: visor down, Zzz */
+  .s-snooze .visor-up, .s-snooze .eyes, .s-snooze .patches, .s-snooze .sweat { display: none; }
+  .s-snooze .visor-down, .s-snooze .fx-zzz { display: inline; }
+  .s-snooze .torso { animation-duration: 6s; }
+  .s-snooze .head-anim { transform-origin: 120px 160px; animation: snoozeHead 6s ease-in-out infinite; }
+  .s-snooze .fx-zzz text { animation: zfloat 3s ease-in infinite; }
+  .s-snooze .z2 { animation-delay: -1s; }
+  .s-snooze .z3 { animation-delay: -2s; }
+  @keyframes snoozeHead { 50% { transform: translateY(3px) rotate(2deg); } }
+  @keyframes zfloat { 0% { opacity: 0; transform: translate(0, 8px); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(10px, -14px); } }
+
+  /* hidden: ducks fully out of view, ears peek back */
+  .s-hidden .whole { animation: duck 6s ease-in-out infinite; }
+  .s-hidden .shadow { transform-origin: 122px 243px; animation: duckShadow 6s ease-in-out infinite; }
+  @keyframes duck { 0%, 12% { transform: none; } 26%, 62% { transform: translateY(260px); } 74%, 80% { transform: translateY(150px); } 92%, 100% { transform: none; } }
+  @keyframes duckShadow { 0%, 12%, 92%, 100% { transform: none; } 26%, 80% { transform: scale(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panda, .panda * { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="hero" data-panda="idle"></div>
+    <div>
+      <p class="eyebrow">Nudgy · character concept</p>
+      <h1>Lazy by nature. On duty anyway.</h1>
+      <p class="lede">A small panda in knight armor a size too big. It yawns, slouches and dozes on its bamboo sword, but it never leaves its post, and it's wide awake the moment you drift.</p>
+    </div>
+  </header>
+
+  <section>
+    <h2>Animation states</h2>
+    <p class="sub">Six of the overlay's states, animated. Lines are Coach tone.</p>
+    <div class="grid">
+      <article class="card">
+        <div class="stage" data-panda="idle"></div>
+        <div class="meta"><code>idle_dozing</code><span>focusing, nothing to say</span></div>
+        <p class="what">Breathes, blinks, slowly nods off, jolts awake, keeps leaning on the sword.</p>
+        <p class="bubble silent">Silent. Just guarding. Mostly with its eyes open.</p>
+      </article>
+      <article class="card">
+        <div class="stage" data-panda="alert"></div>
+        <div class="meta"><code>alert</code><span>drift nudge</span></div>
+        <p class="what">Eyes snap open, a "!" pops over the helmet, small hop, then it talks.</p>
+        <div class="bubble">I was half asleep and even I noticed. Six minutes of Instagram.
+          <div class="chips"><span>Back to work</span><span>5-min break</span><span>I'm actually working</span></div>
+        </div>
+      </article>
+      <article class="card">
+        <div class="stage" data-panda="celebrate"></div>
+        <div class="meta"><code>celebrate</code><span>streak milestone</span></div>
+        <p class="what">A sleepy little hop with happy eyes and sparkles.</p>
+        <p class="bubble">45 minutes straight. Too tired to clap, but I'm proud of you.</p>
+      </article>
+      <article class="card">
+        <div class="stage" data-panda="break"></div>
+        <div class="meta"><code>on_break</code><span>break started</span></div>
+        <p class="what">Big yawn and stretch. Off duty for five minutes, finally.</p>
+        <p class="bubble">Five minutes. I'll be right here. Resting.</p>
+      </article>
+      <article class="card">
+        <div class="stage" data-panda="snooze"></div>
+        <div class="meta"><code>snoozed</code><span>snooze 15 / 60</span></div>
+        <p class="what">Drops the visor over its eyes and actually sleeps.</p>
+        <p class="bubble silent">Silent until the snooze ends.</p>
+      </article>
+      <article class="card">
+        <div class="stage" data-panda="hidden"></div>
+        <div class="meta"><code>hidden</code><span>calls, fullscreen, presenting</span></div>
+        <p class="what">Ducks fully out of view, not just faded. Ears peek back when it returns.</p>
+        <p class="bubble silent">Silent and invisible. Never shows up on a screen share.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>At overlay size</h2>
+    <p class="sub">Settings offer S / M / L. It has to read at 72 px over any wallpaper.</p>
+    <div class="sizes">
+      <figure><div data-panda="idle" style="height:128px;aspect-ratio:240/260"></div><figcaption>L · 128 px</figcaption></figure>
+      <figure><div data-panda="idle" style="height:96px;aspect-ratio:240/260"></div><figcaption>M · 96 px (default)</figcaption></figure>
+      <figure><div data-panda="idle" style="height:72px;aspect-ratio:240/260"></div><figcaption>S · 72 px</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Palette</h2>
+    <p class="sub">Flat colour, thick charcoal outlines. Armor colours become Rive inputs so future skins need no new art.</p>
+    <div class="palette">
+      <div class="swatch"><i style="background:#fbfaf7"></i><div><b>Fur</b><code>#fbfaf7</code></div></div>
+      <div class="swatch"><i style="background:#2b2b33"></i><div><b>Ink / dark fur</b><code>#2b2b33</code></div></div>
+      <div class="swatch"><i style="background:#c5cdd8"></i><div><b>Steel</b><code>#c5cdd8</code></div></div>
+      <div class="swatch"><i style="background:#97a3b3"></i><div><b>Steel shade</b><code>#97a3b3</code></div></div>
+      <div class="swatch"><i style="background:#8cc265"></i><div><b>Bamboo</b><code>#8cc265</code></div></div>
+      <div class="swatch"><i style="background:#4f8a3c"></i><div><b>Bamboo node</b><code>#4f8a3c</code></div></div>
+      <div class="swatch"><i style="background:#e3b04b"></i><div><b>Brass trim</b><code>#e3b04b</code></div></div>
+      <div class="swatch"><i style="background:#f4a9a5"></i><div><b>Blush / pads</b><code>#f4a9a5</code></div></div>
+      <div class="swatch"><i style="background:#ff6b57"></i><div><b>Alert</b><code>#ff6b57</code></div></div>
+    </div>
+  </section>
+</div>
+
+<template id="panda-svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" class="panda" role="img" aria-label="Nudgy, a small panda in knight armor, dozing against a bamboo sword">
+  <!-- Nudgy, the armored panda. Renders the idle pose on its own; the other
+       states are hidden layers that panda-states.html switches on with CSS. -->
+  <ellipse class="shadow" cx="122" cy="243" rx="78" ry="9" fill="#2b2b33" opacity=".12"/>
+
+  <g class="whole">
+    <!-- bamboo sword, planted in the ground and mostly used to lean on -->
+    <g class="sword" stroke="#2b2b33" stroke-width="3.5" stroke-linejoin="round">
+      <rect x="200" y="136" width="13" height="104" rx="6" fill="#8cc265"/>
+      <path d="M201.5 168h10M201.5 202h10" stroke="#4f8a3c" stroke-width="3" stroke-linecap="round"/>
+      <path d="M213 168q14-6 18-16q-14 2-18 16z" fill="#8cc265" stroke-width="2.5"/>
+      <rect x="189" y="128" width="35" height="10" rx="5" fill="#e3b04b"/>
+      <rect x="202" y="100" width="9" height="30" rx="3" fill="#8a5a3b"/>
+      <circle cx="206.5" cy="97" r="6.5" fill="#e3b04b"/>
+    </g>
+
+    <g class="torso">
+      <ellipse cx="120" cy="190" rx="58" ry="50" fill="#fbfaf7" stroke="#2b2b33" stroke-width="3.5"/>
+      <!-- chest plate with bamboo-leaf crest -->
+      <path d="M84 154Q120 140 156 154L152 198Q120 214 88 198Z" fill="#c5cdd8" stroke="#2b2b33" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M93 160Q120 150 147 160" fill="none" stroke="#eef2f7" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M109 168h22v8q0 11-11 15q-11-4-11-15Z" fill="#6fae5b" stroke="#2b2b33" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M120 171q6 5 0 14q-6-9 0-14Z" fill="#d9f0c6"/>
+      <!-- arms: one limp on the belly, one leaning on the sword -->
+      <path class="arm-l" d="M80 166Q72 196 98 208" fill="none" stroke="#2b2b33" stroke-width="24" stroke-linecap="round"/>
+      <path class="arm-r" d="M160 166Q188 156 204 126" fill="none" stroke="#2b2b33" stroke-width="22" stroke-linecap="round"/>
+      <!-- shoulder plates -->
+      <g fill="#c5cdd8" stroke="#2b2b33" stroke-width="3.5">
+        <ellipse cx="78" cy="154" rx="23" ry="15" transform="rotate(-24 78 154)"/>
+        <ellipse cx="162" cy="154" rx="23" ry="15" transform="rotate(24 162 154)"/>
+      </g>
+      <path d="M63 161Q78 151 94 158M146 158Q162 151 177 161" fill="none" stroke="#97a3b3" stroke-width="3" stroke-linecap="round"/>
+    </g>
+
+    <!-- feet out in front, paw pads up -->
+    <g class="feet">
+      <ellipse cx="84" cy="228" rx="24" ry="18" fill="#2b2b33"/>
+      <ellipse cx="156" cy="228" rx="24" ry="18" fill="#2b2b33"/>
+      <g fill="#f4a9a5">
+        <ellipse cx="84" cy="232" rx="10" ry="8"/>
+        <circle cx="73" cy="220" r="3.6"/><circle cx="84" cy="216" r="3.6"/><circle cx="95" cy="220" r="3.6"/>
+        <ellipse cx="156" cy="232" rx="10" ry="8"/>
+        <circle cx="145" cy="220" r="3.6"/><circle cx="156" cy="216" r="3.6"/><circle cx="167" cy="220" r="3.6"/>
+      </g>
+    </g>
+
+    <g class="head-anim">
+      <g transform="rotate(5 120 140)">
+        <ellipse cx="120" cy="106" rx="68" ry="56" fill="#fbfaf7" stroke="#2b2b33" stroke-width="3.5"/>
+        <ellipse cx="120" cy="138" rx="24" ry="16" fill="#f0ece4"/>
+
+        <g class="patches" fill="#2b2b33">
+          <ellipse cx="92" cy="119" rx="16" ry="21" transform="rotate(32 92 119)"/>
+          <ellipse cx="148" cy="119" rx="16" ry="21" transform="rotate(-32 148 119)"/>
+        </g>
+
+        <g class="eyes">
+          <!-- default: half-lidded, the lid is just the patch colour -->
+          <g class="eye-half" fill="#fff">
+            <path d="M89 114A7 7 0 0 0 103 114Z"/>
+            <path d="M137 114A7 7 0 0 0 151 114Z"/>
+            <circle cx="96" cy="115" r="4.2" fill="#2b2b33"/>
+            <circle cx="144" cy="115" r="4.2" fill="#2b2b33"/>
+            <circle cx="97.6" cy="116.6" r="1.4"/>
+            <circle cx="145.6" cy="116.6" r="1.4"/>
+          </g>
+          <g class="eye-open" display="none">
+            <circle cx="96" cy="113" r="7.5" fill="#fff"/>
+            <circle cx="144" cy="113" r="7.5" fill="#fff"/>
+            <circle cx="96.5" cy="114" r="4.6" fill="#2b2b33"/>
+            <circle cx="143.5" cy="114" r="4.6" fill="#2b2b33"/>
+            <circle cx="98.3" cy="111.8" r="1.7" fill="#fff"/>
+            <circle cx="145.3" cy="111.8" r="1.7" fill="#fff"/>
+          </g>
+          <path class="eye-happy" display="none" d="M89 117Q96 108 103 117M137 117Q144 108 151 117" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>
+          <path class="eye-closed" display="none" d="M89 114Q96 120 103 114M137 114Q144 120 151 114" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>
+        </g>
+
+        <path d="M113 130Q120 126 127 130Q125 137 120 138Q115 137 113 130Z" fill="#2b2b33"/>
+        <path class="mouth-rest" d="M120 138v4M113 142Q116.5 146 120 142Q123.5 146 127 142" fill="none" stroke="#2b2b33" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse class="mouth-o" display="none" cx="120" cy="146" rx="5" ry="5" fill="#2b2b33"/>
+        <g class="mouth-smile" display="none">
+          <path d="M111 141Q120 154 129 141Z" fill="#2b2b33" stroke="#2b2b33" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M115 147Q120 151 125 147Q120 145 115 147Z" fill="#f08a8a"/>
+        </g>
+        <g class="mouth-yawn" display="none">
+          <ellipse cx="120" cy="148" rx="7.5" ry="9.5" fill="#2b2b33"/>
+          <ellipse cx="120" cy="153" rx="4.8" ry="3.2" fill="#f08a8a"/>
+        </g>
+
+        <g class="blush" fill="#f4a9a5" opacity=".7">
+          <ellipse cx="84" cy="148" rx="8.5" ry="5"/>
+          <ellipse cx="156" cy="148" rx="8.5" ry="5"/>
+        </g>
+
+        <!-- it's trying -->
+        <path class="sweat" d="M36 104Q44 116 36 121Q28 116 36 104Z" fill="#a6dcff" stroke="#2b2b33" stroke-width="2.5" stroke-linejoin="round"/>
+
+        <!-- helmet, a size too big and worn crooked -->
+        <g class="helmet" transform="rotate(-6 120 70)">
+          <g class="plume" stroke="#2b2b33" stroke-width="2.5" stroke-linejoin="round">
+            <path d="M124 40Q128 22 140 12" fill="none" stroke="#4f8a3c" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M140 12q12-8 22-2q-10 9-22 2Z" fill="#8cc265"/>
+            <path d="M133 21q-6-12-18-14q3 12 18 14Z" fill="#8cc265"/>
+          </g>
+          <path d="M50 100C46 10 194 10 190 100Q120 86 50 100Z" fill="#c5cdd8" stroke="#2b2b33" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M68 76Q74 48 102 38" fill="none" stroke="#eef2f7" stroke-width="4" stroke-linecap="round"/>
+          <path d="M120 36V88" stroke="#97a3b3" stroke-width="4" stroke-linecap="round"/>
+          <path d="M48 98Q120 82 192 98L190 106Q120 92 50 106Z" fill="#97a3b3" stroke="#2b2b33" stroke-width="3" stroke-linejoin="round"/>
+          <g fill="#eef2f7">
+            <circle cx="70" cy="99" r="2"/><circle cx="95" cy="94.5" r="2"/>
+            <circle cx="145" cy="94.5" r="2"/><circle cx="170" cy="99" r="2"/>
+          </g>
+          <g class="visor-up">
+            <path d="M92 46Q120 30 148 46L145 57Q120 45 95 57Z" fill="#b2bcc8" stroke="#2b2b33" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M104 48h10M126 48h10" stroke="#2b2b33" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+          <!-- ears poke through holes in the helmet -->
+          <circle cx="76" cy="44" r="17" fill="#2b2b33"/>
+          <ellipse cx="79" cy="58" rx="17" ry="6.5" transform="rotate(-28 79 58)" fill="#97a3b3" stroke="#2b2b33" stroke-width="3"/>
+          <circle cx="164" cy="44" r="17" fill="#2b2b33"/>
+          <ellipse cx="161" cy="58" rx="17" ry="6.5" transform="rotate(28 161 58)" fill="#97a3b3" stroke="#2b2b33" stroke-width="3"/>
+        </g>
+
+        <!-- snooze: visor dropped over the eyes -->
+        <g class="visor-down" display="none">
+          <path d="M54 98Q120 84 186 98L183 122Q120 134 57 122Z" fill="#b2bcc8" stroke="#2b2b33" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M66 104Q120 92 174 104" fill="none" stroke="#eef2f7" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+          <path d="M78 112Q94 107 108 111M132 111Q146 107 162 112" fill="none" stroke="#2b2b33" stroke-width="4" stroke-linecap="round"/>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- effects, off unless a state turns them on -->
+  <g class="fx-alert" display="none" stroke="#2b2b33" stroke-width="3">
+    <rect x="199" y="12" width="11" height="32" rx="5.5" fill="#ff6b57" transform="rotate(12 204 28)"/>
+    <circle cx="199" cy="56" r="6" fill="#ff6b57"/>
+  </g>
+  <g class="fx-zzz" display="none" fill="#7d8aa0" font-family="'Nunito','Trebuchet MS',system-ui,sans-serif" font-weight="900">
+    <text class="z1" x="170" y="68" font-size="16">z</text>
+    <text class="z2" x="185" y="52" font-size="21">z</text>
+    <text class="z3" x="201" y="36" font-size="27">Z</text>
+  </g>
+  <g class="fx-spark" display="none" fill="#ffd166" stroke="#2b2b33" stroke-width="2" stroke-linejoin="round">
+    <path class="sp1" d="M30 50q3 9 11 11q-8 3-11 11q-3-8-11-11q8-2 11-11Z"/>
+    <path class="sp2" d="M214 40q2.5 7 9 9q-6.5 2-9 9q-2.5-7-9-9q6.5-2 9-9Z"/>
+    <path class="sp3" d="M22 150q2 6 8 8q-6 2-8 8q-2-6-8-8q6-2 8-8Z"/>
+    <path class="sp4" d="M226 68q2 6 8 8q-6 2-8 8q-2-6-8-8q6-2 8-8Z"/>
+  </g>
+</svg>
+</template>
+<script>
+  const svg = document.getElementById('panda-svg').innerHTML;
+  document.querySelectorAll('[data-panda]').forEach(el => {
+    el.innerHTML = svg;
+    const s = el.querySelector('svg');
+    s.classList.add('s-' + el.dataset.panda);
+    if (el.dataset.panda !== 'idle' || el.closest('.card')) s.setAttribute('aria-label', 'Nudgy, ' + el.dataset.panda + ' state');
+  });
+</script>
+</body>
+</html>

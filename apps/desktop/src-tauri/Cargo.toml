@@ -1,0 +1,20 @@
+[package]
+name = "nudgy-desktop"
+description = "Nudgy desktop app: tray, overlay, watchers, focus engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+# The `_lib` suffix avoids a name clash with the bin on Windows (cargo#8519).
+name = "nudgy_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+nudgy-shared = { path = "../../../packages/shared" }
+tauri = { version = "2", features = [] }
+serde.workspace = true
+serde_json.workspace = true

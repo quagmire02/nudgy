@@ -1,0 +1,7 @@
+[
+  { "label": "focused", "category": "ide", "confidence": 0.95, "reason": "rule", "ambiguous": false },
+  { "label": "focused", "category": "video", "confidence": 0.71, "reason": "goal_match", "ambiguous": false, "similarity": 0.62 },
+  { "label": "distracting", "category": "social", "confidence": 0.9, "reason": "rule", "ambiguous": false },
+  { "label": "neutral", "category": "video", "confidence": 0.4, "reason": "unknown", "ambiguous": true, "similarity": 0.31 },
+  { "label": "focused", "category": "social", "confidence": 1.0, "reason": "override", "ambiguous": false }
+]

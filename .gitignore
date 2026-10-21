@@ -1,0 +1,12 @@
+node_modules/
+target/
+dist/
+.wrangler/
+*.log
+*.db
+*.db-*
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/

@@ -1,0 +1,5 @@
+[
+  { "trigger": "drift_first", "tone": "coach", "persona": "panda", "language": "en", "goal": "thesis ch3", "category": "social", "app": "Instagram", "minutes": 8, "streak": 2, "nudgeLevel": 1, "swearing": false },
+  { "trigger": "streak90", "tone": "gentle", "persona": "panda", "language": "en", "goal": "Study DSA", "minutes": 90, "nudgeLevel": 0, "swearing": false },
+  { "trigger": "drift_question", "tone": "savage", "persona": "panda", "language": "en", "goal": "Dynamic programming", "category": "video", "app": "YouTube", "minutes": 4, "nudgeLevel": 0, "title": "Top 10 coding interview fails", "swearing": true }
+]

@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" class="panda" role="img" aria-label="Nudgy, a small panda in knight armor, dozing against a bamboo sword">
+  <!-- Nudgy, the armored panda. Renders the idle pose on its own; the other
+       states are hidden layers that panda-states.html switches on with CSS. -->
+  <ellipse class="shadow" cx="122" cy="243" rx="78" ry="9" fill="#2b2b33" opacity=".12"/>
+
+  <g class="whole">
+    <!-- bamboo sword, planted in the ground and mostly used to lean on -->
+    <g class="sword" stroke="#2b2b33" stroke-width="3.5" stroke-linejoin="round">
+      <rect x="200" y="136" width="13" height="104" rx="6" fill="#8cc265"/>
+      <path d="M201.5 168h10M201.5 202h10" stroke="#4f8a3c" stroke-width="3" stroke-linecap="round"/>
+      <path d="M213 168q14-6 18-16q-14 2-18 16z" fill="#8cc265" stroke-width="2.5"/>
+      <rect x="189" y="128" width="35" height="10" rx="5" fill="#e3b04b"/>
+      <rect x="202" y="100" width="9" height="30" rx="3" fill="#8a5a3b"/>
+      <circle cx="206.5" cy="97" r="6.5" fill="#e3b04b"/>
+    </g>
+
+    <g class="torso">
+      <ellipse cx="120" cy="190" rx="58" ry="50" fill="#fbfaf7" stroke="#2b2b33" stroke-width="3.5"/>
+      <!-- chest plate with bamboo-leaf crest -->
+      <path d="M84 154Q120 140 156 154L152 198Q120 214 88 198Z" fill="#c5cdd8" stroke="#2b2b33" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M93 160Q120 150 147 160" fill="none" stroke="#eef2f7" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M109 168h22v8q0 11-11 15q-11-4-11-15Z" fill="#6fae5b" stroke="#2b2b33" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M120 171q6 5 0 14q-6-9 0-14Z" fill="#d9f0c6"/>
+      <!-- arms: one limp on the belly, one leaning on the sword -->
+      <path class="arm-l" d="M80 166Q72 196 98 208" fill="none" stroke="#2b2b33" stroke-width="24" stroke-linecap="round"/>
+      <path class="arm-r" d="M160 166Q188 156 204 126" fill="none" stroke="#2b2b33" stroke-width="22" stroke-linecap="round"/>
+      <!-- shoulder plates -->
+      <g fill="#c5cdd8" stroke="#2b2b33" stroke-width="3.5">
+        <ellipse cx="78" cy="154" rx="23" ry="15" transform="rotate(-24 78 154)"/>
+        <ellipse cx="162" cy="154" rx="23" ry="15" transform="rotate(24 162 154)"/>
+      </g>
+      <path d="M63 161Q78 151 94 158M146 158Q162 151 177 161" fill="none" stroke="#97a3b3" stroke-width="3" stroke-linecap="round"/>
+    </g>
+
+    <!-- feet out in front, paw pads up -->
+    <g class="feet">
+      <ellipse cx="84" cy="228" rx="24" ry="18" fill="#2b2b33"/>
+      <ellipse cx="156" cy="228" rx="24" ry="18" fill="#2b2b33"/>
+      <g fill="#f4a9a5">
+        <ellipse cx="84" cy="232" rx="10" ry="8"/>
+        <circle cx="73" cy="220" r="3.6"/><circle cx="84" cy="216" r="3.6"/><circle cx="95" cy="220" r="3.6"/>
+        <ellipse cx="156" cy="232" rx="10" ry="8"/>
+        <circle cx="145" cy="220" r="3.6"/><circle cx="156" cy="216" r="3.6"/><circle cx="167" cy="220" r="3.6"/>
+      </g>
+    </g>
+
+    <g class="head-anim">
+      <g transform="rotate(5 120 140)">
+        <ellipse cx="120" cy="106" rx="68" ry="56" fill="#fbfaf7" stroke="#2b2b33" stroke-width="3.5"/>
+        <ellipse cx="120" cy="138" rx="24" ry="16" fill="#f0ece4"/>
+
+        <g class="patches" fill="#2b2b33">
+          <ellipse cx="92" cy="119" rx="16" ry="21" transform="rotate(32 92 119)"/>
+          <ellipse cx="148" cy="119" rx="16" ry="21" transform="rotate(-32 148 119)"/>
+        </g>
+
+        <g class="eyes">
+          <!-- default: half-lidded, the lid is just the patch colour -->
+          <g class="eye-half" fill="#fff">
+            <path d="M89 114A7 7 0 0 0 103 114Z"/>
+            <path d="M137 114A7 7 0 0 0 151 114Z"/>
+            <circle cx="96" cy="115" r="4.2" fill="#2b2b33"/>
+            <circle cx="144" cy="115" r="4.2" fill="#2b2b33"/>
+            <circle cx="97.6" cy="116.6" r="1.4"/>
+            <circle cx="145.6" cy="116.6" r="1.4"/>
+          </g>
+          <g class="eye-open" display="none">
+            <circle cx="96" cy="113" r="7.5" fill="#fff"/>
+            <circle cx="144" cy="113" r="7.5" fill="#fff"/>
+            <circle cx="96.5" cy="114" r="4.6" fill="#2b2b33"/>
+            <circle cx="143.5" cy="114" r="4.6" fill="#2b2b33"/>
+            <circle cx="98.3" cy="111.8" r="1.7" fill="#fff"/>
+            <circle cx="145.3" cy="111.8" r="1.7" fill="#fff"/>
+          </g>
+          <path class="eye-happy" display="none" d="M89 117Q96 108 103 117M137 117Q144 108 151 117" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>
+          <path class="eye-closed" display="none" d="M89 114Q96 120 103 114M137 114Q144 120 151 114" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>
+        </g>
+
+        <path d="M113 130Q120 126 127 130Q125 137 120 138Q115 137 113 130Z" fill="#2b2b33"/>
+        <path class="mouth-rest" d="M120 138v4M113 142Q116.5 146 120 142Q123.5 146 127 142" fill="none" stroke="#2b2b33" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse class="mouth-o" display="none" cx="120" cy="146" rx="5" ry="5" fill="#2b2b33"/>
+        <g class="mouth-smile" display="none">
+          <path d="M111 141Q120 154 129 141Z" fill="#2b2b33" stroke="#2b2b33" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M115 147Q120 151 125 147Q120 145 115 147Z" fill="#f08a8a"/>
+        </g>
+        <g class="mouth-yawn" display="none">
+          <ellipse cx="120" cy="148" rx="7.5" ry="9.5" fill="#2b2b33"/>
+          <ellipse cx="120" cy="153" rx="4.8" ry="3.2" fill="#f08a8a"/>
+        </g>
+
+        <g class="blush" fill="#f4a9a5" opacity=".7">
+          <ellipse cx="84" cy="148" rx="8.5" ry="5"/>
+          <ellipse cx="156" cy="148" rx="8.5" ry="5"/>
+        </g>
+
+        <!-- it's trying -->
+        <path class="sweat" d="M36 104Q44 116 36 121Q28 116 36 104Z" fill="#a6dcff" stroke="#2b2b33" stroke-width="2.5" stroke-linejoin="round"/>
+
+        <!-- helmet, a size too big and worn crooked -->
+        <g class="helmet" transform="rotate(-6 120 70)">
+          <g class="plume" stroke="#2b2b33" stroke-width="2.5" stroke-linejoin="round">
+            <path d="M124 40Q128 22 140 12" fill="none" stroke="#4f8a3c" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M140 12q12-8 22-2q-10 9-22 2Z" fill="#8cc265"/>
+            <path d="M133 21q-6-12-18-14q3 12 18 14Z" fill="#8cc265"/>
+          </g>
+          <path d="M50 100C46 10 194 10 190 100Q120 86 50 100Z" fill="#c5cdd8" stroke="#2b2b33" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M68 76Q74 48 102 38" fill="none" stroke="#eef2f7" stroke-width="4" stroke-linecap="round"/>
+          <path d="M120 36V88" stroke="#97a3b3" stroke-width="4" stroke-linecap="round"/>
+          <path d="M48 98Q120 82 192 98L190 106Q120 92 50 106Z" fill="#97a3b3" stroke="#2b2b33" stroke-width="3" stroke-linejoin="round"/>
+          <g fill="#eef2f7">
+            <circle cx="70" cy="99" r="2"/><circle cx="95" cy="94.5" r="2"/>
+            <circle cx="145" cy="94.5" r="2"/><circle cx="170" cy="99" r="2"/>
+          </g>
+          <g class="visor-up">
+            <path d="M92 46Q120 30 148 46L145 57Q120 45 95 57Z" fill="#b2bcc8" stroke="#2b2b33" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M104 48h10M126 48h10" stroke="#2b2b33" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+          <!-- ears poke through holes in the helmet -->
+          <circle cx="76" cy="44" r="17" fill="#2b2b33"/>
+          <ellipse cx="79" cy="58" rx="17" ry="6.5" transform="rotate(-28 79 58)" fill="#97a3b3" stroke="#2b2b33" stroke-width="3"/>
+          <circle cx="164" cy="44" r="17" fill="#2b2b33"/>
+          <ellipse cx="161" cy="58" rx="17" ry="6.5" transform="rotate(28 161 58)" fill="#97a3b3" stroke="#2b2b33" stroke-width="3"/>
+        </g>
+
+        <!-- snooze: visor dropped over the eyes -->
+        <g class="visor-down" display="none">
+          <path d="M54 98Q120 84 186 98L183 122Q120 134 57 122Z" fill="#b2bcc8" stroke="#2b2b33" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M66 104Q120 92 174 104" fill="none" stroke="#eef2f7" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+          <path d="M78 112Q94 107 108 111M132 111Q146 107 162 112" fill="none" stroke="#2b2b33" stroke-width="4" stroke-linecap="round"/>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- effects, off unless a state turns them on -->
+  <g class="fx-alert" display="none" stroke="#2b2b33" stroke-width="3">
+    <rect x="199" y="12" width="11" height="32" rx="5.5" fill="#ff6b57" transform="rotate(12 204 28)"/>
+    <circle cx="199" cy="56" r="6" fill="#ff6b57"/>
+  </g>
+  <g class="fx-zzz" display="none" fill="#7d8aa0" font-family="'Nunito','Trebuchet MS',system-ui,sans-serif" font-weight="900">
+    <text class="z1" x="170" y="68" font-size="16">z</text>
+    <text class="z2" x="185" y="52" font-size="21">z</text>
+    <text class="z3" x="201" y="36" font-size="27">Z</text>
+  </g>
+  <g class="fx-spark" display="none" fill="#ffd166" stroke="#2b2b33" stroke-width="2" stroke-linejoin="round">
+    <path class="sp1" d="M30 50q3 9 11 11q-8 3-11 11q-3-8-11-11q8-2 11-11Z"/>
+    <path class="sp2" d="M214 40q2.5 7 9 9q-6.5 2-9 9q-2.5-7-9-9q6.5-2 9-9Z"/>
+    <path class="sp3" d="M22 150q2 6 8 8q-6 2-8 8q-2-6-8-8q6-2 8-8Z"/>
+    <path class="sp4" d="M226 68q2 6 8 8q-6 2-8 8q-2-6-8-8q6-2 8-8Z"/>
+  </g>
+</svg>

@@ -1,0 +1,17 @@
+{
+  "name": "@nudgy/shared",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Nudgy contracts for TypeScript. Generated from the Rust crate in this folder.",
+  "exports": {
+    ".": "./ts/index.ts"
+  },
+  "scripts": {
+    "generate": "cargo test -p nudgy-shared",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
+}

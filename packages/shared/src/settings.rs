@@ -11,7 +11,7 @@ use crate::constants;
 pub struct Settings {
     pub onboarded: bool,
     pub tone: Tone,
-    /// TTS voice id, e.g. `kokoro:af_heart`, or `sapi:default`.
+    /// A Windows voice id from `list_voices`, or `default` for the system voice.
     pub voice: String,
     /// Bubble only, no voice.
     pub quiet_mode: bool,
@@ -36,7 +36,7 @@ impl Default for Settings {
         Self {
             onboarded: false,
             tone: Tone::Coach,
-            voice: "sapi:default".into(),
+            voice: "default".into(),
             quiet_mode: false,
             character_size: CharacterSize::M,
             drift_threshold_min: constants::DRIFT_THRESHOLD_MS / 60_000,

@@ -3,6 +3,7 @@ mod brain;
 mod demo;
 mod lines;
 mod overlay;
+mod speech;
 mod store;
 mod tray;
 
@@ -10,7 +11,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use nudgy_activity::{ActivityService, ServiceConfig, WindowsProbe};
-use nudgy_shared::{ActivityEvent, ExtensionStatus, HitRect, SessionView, Settings, TriggerKind, UserAction, constants};
+use nudgy_shared::{ActivityEvent, ExtensionStatus, HitRect, SessionView, Settings, TriggerKind, UserAction, VoiceOption, constants};
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut, ShortcutState};
 
@@ -28,6 +29,8 @@ pub struct Core {
     pub tray: Mutex<Option<tray::TrayItems>>,
     /// The focus engine, on its own thread.
     pub brain: Mutex<Option<brain::Brain>>,
+    /// Line library and voice.
+    pub speech: speech::Speech,
 }
 
 type CommandResult<T> = Result<T, String>;
@@ -119,11 +122,13 @@ fn panda_hidden(core: tauri::State<Core>) -> bool {
 /// "Test the panda": plays a moment with a sample line.
 #[tauri::command]
 fn demo_moment(app: AppHandle, core: tauri::State<Core>, kind: TriggerKind) {
-    let (tone, quiet) = {
-        let s = core.settings.lock().unwrap();
-        (s.tone, s.quiet_mode)
-    };
-    overlay::moment(&app, demo::moment(kind, tone, quiet));
+    let tone = core.settings.lock().unwrap().tone;
+    speech::present(&app, demo::trigger(kind, tone));
+}
+
+#[tauri::command]
+fn list_voices() -> Vec<VoiceOption> {
+    speech::voices()
 }
 
 /// The overlay page loaded: send it the current state.
@@ -229,6 +234,7 @@ pub fn run() {
                 overlay: overlay::Overlay::default(),
                 tray: Mutex::new(None),
                 brain: Mutex::new(None),
+                speech: speech::Speech::new(),
             });
             let handle = app.handle().clone();
             *app.state::<Core>().activity.lock().unwrap() = start_activity(&handle);
@@ -264,6 +270,7 @@ pub fn run() {
             panda_hidden,
             demo_moment,
             session_view,
+            list_voices,
             overlay_ready,
             overlay_set_regions,
             panda_clicked,

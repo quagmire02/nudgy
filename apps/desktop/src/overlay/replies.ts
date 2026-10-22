@@ -41,7 +41,7 @@ export function bubbleMillis(text: string, replies: number): number {
   return replies > 0 ? Math.max(reading, 20_000) : reading;
 }
 
-/** Rough speaking time, until real speech events arrive (milestone 4). */
+/** Rough speaking time, for the browser preview (the app uses real audio lengths). */
 export function speakingMillis(text: string): number {
   return Math.max(1_200, text.length * 62);
 }

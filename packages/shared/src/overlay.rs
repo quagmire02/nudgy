@@ -47,3 +47,21 @@ impl HitRect {
         x >= self.x && y >= self.y && x < self.x + self.width && y < self.y + self.height
     }
 }
+
+/// A line started playing (event `overlay://speaking`): the mouth moves for
+/// exactly as long as the audio.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct Speaking {
+    pub trigger_id: String,
+    pub duration_ms: u32,
+}
+
+/// An installed voice the user can pick.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct VoiceOption {
+    pub id: String,
+    pub name: String,
+    pub language: String,
+}

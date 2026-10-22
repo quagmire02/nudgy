@@ -282,3 +282,19 @@ fn actually_working_on_youtube_covers_that_video_not_all_of_youtube() {
     sim.run(&web("youtube.com", "Funny cats"), 6 * 60);
     assert_eq!(nudges(&sim), 2, "other videos still count");
 }
+
+#[test]
+fn every_spoken_trigger_carries_the_slots_its_lines_need() {
+    // The line library relies on these (nudgy-lines `guaranteed_slots`).
+    let mut sim = Sim::new();
+    sim.start("Graph algorithms shortest path", 120);
+    let said = sim.run(&web("youtube.com", "Funny algorithm memes"), 3 * 60);
+    assert!(said[0].context.app.is_some(), "question needs {{app}}");
+    sim.act(UserAction::TakeBreak { minutes: 5 });
+    sim.run(&insta(), 5 * 60 + 1);
+    let overrun = sim.run(&insta(), 3 * 60);
+    assert_eq!(overrun[0].kind, K::BreakOverrun);
+    assert!(overrun[0].context.app.is_some(), "overrun needs {{app}}");
+    let ack = sim.act(UserAction::ActuallyWorking);
+    assert_eq!(ack[0].context.app.as_deref(), Some("instagram.com"));
+}

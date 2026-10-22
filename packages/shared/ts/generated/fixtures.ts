@@ -21,6 +21,8 @@ import type { OverlayState } from "./OverlayState";
 import type { Moment } from "./Moment";
 import type { HitRect } from "./HitRect";
 import type { SessionView } from "./SessionView";
+import type { Speaking } from "./Speaking";
+import type { VoiceOption } from "./VoiceOption";
 
 export const activityEvents: ActivityEvent[] = [
   {
@@ -608,7 +610,7 @@ export const settings: Settings[] = [
     "swearing": false,
     "tone": "coach",
     "trackingPaused": false,
-    "voice": "sapi:default"
+    "voice": "default"
   }
 ];
 
@@ -705,5 +707,20 @@ export const sessionViews: SessionView[] = [
       },
       "tone": "coach"
     }
+  }
+];
+
+export const speakings: Speaking[] = [
+  {
+    "durationMs": 3120,
+    "triggerId": "t-0001"
+  }
+];
+
+export const voiceOptions: VoiceOption[] = [
+  {
+    "id": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Speech_OneCore\\Voices\\Tokens\\MSTTS_V110_enUS_ZiraM",
+    "language": "en-US",
+    "name": "Microsoft Zira"
   }
 ];

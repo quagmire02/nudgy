@@ -12,10 +12,10 @@ use nudgy_activity::now_ms;
 use nudgy_engine::embed::MiniLm;
 use nudgy_engine::streak::day_streak;
 use nudgy_engine::{Classifier, Engine, EngineSettings, Input, Lexical, Output, Similarity};
-use nudgy_shared::{ActivityEvent, LineSource, Moment, SessionState, SessionView, Settings, SpokenLine, UnixMs, UserAction};
+use nudgy_shared::{ActivityEvent, SessionState, SessionView, Settings, UnixMs, UserAction};
 use tauri::{AppHandle, Emitter, Manager};
 
-use crate::{Core, lines, overlay};
+use crate::{Core, overlay, speech};
 
 const DAY_MS: UnixMs = 86_400_000;
 
@@ -148,16 +148,7 @@ fn apply(app: &AppHandle, engine: &mut Engine, view: &Mutex<SessionView>, out: V
     let core = app.state::<Core>();
     for output in out {
         match output {
-            Output::Trigger(trigger) if !quitting => {
-                let quiet = core.settings.lock().unwrap().quiet_mode;
-                let line = SpokenLine {
-                    trigger_id: trigger.id.clone(),
-                    text: lines::placeholder(&trigger),
-                    source: LineSource::Canned,
-                    speak: !quiet,
-                };
-                overlay::moment(app, Moment { trigger, line });
-            }
+            Output::Trigger(trigger) if !quitting => speech::present(app, trigger),
             Output::Trigger(_) => {}
             Output::Session(session) => {
                 if let Some(a) = core.activity.lock().unwrap().as_ref()

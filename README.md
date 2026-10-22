@@ -13,7 +13,9 @@ A small armored panda on your Windows desktop that notices when you drift from y
 | `apps/desktop` | Tauri 2 app: panda overlay, tray, hotkeys (Rust in `src-tauri`, React in `src`) | 6 ✅ |
 | `apps/proxy` | Cloudflare Worker for AI lines | 5 |
 | `crates/engine` | Classifier and session engine: what counts as work, when the panda speaks | 3 ✅ |
-| `data/` | Category lists (3 ✅), canned line library (4); `data/models/` is downloaded, not committed | 3, 4 |
+| `crates/lines` | 1,386 canned lines in three tones, slot filling, the content filter | 4 ✅ |
+| `crates/voice` | Speech with the Windows built-in voices | 4 ✅ |
+| `data/` | Category lists, the line library (`data/lines/*.json`); `data/models/` is downloaded, not committed | 3, 4 ✅ |
 | `character/` | Panda concept art and animation states | — |
 | `third_party/libtomcrypt` | libtomcrypt headers for the SQLCipher build | — |
 
@@ -80,3 +82,10 @@ The art is `character/panda.svg` with CSS animations (`apps/desktop/src/overlay/
 - **Rules.** 30-second grace per switch; nudge at 5 cumulative minutes of drift; escalations at +3, +6, +12 minutes, then quiet until you're back; drift resets after 5 minutes of real focus; "there you are" 30 s after a return; idle in a focused app counts for 10 minutes, then "still there?"; unclear titles get "Is this for {goal}?"; silent during calls, fullscreen, presentations, lock and sleep, and for the first minute back; breaks, snooze back-off after three snoozes, streak praise at 25/45/90 minutes, "goal reached", gentle-only after 2 a.m.
 - **Learning.** "I'm actually working" makes that site work for that goal (stored); on video and news sites it covers that title only, so one tutorial doesn't make all of YouTube work.
 - **Acceptance.** `crates/engine/tests/timelines.rs` replays five scripted hour-plus student sessions (a CS assignment, thesis reading, DSA lectures, a marketer whose job is Instagram, a lab report with a call and a Netflix break): 0.20 false nudges per hour of work, target under 1, and every real distraction gets nudged. These are scripted from typical sessions; recorded volunteer timelines can be added in the same format.
+
+## Lines and voice
+
+- **Library.** `data/lines/{gentle,coach,savage}.json`: 1,386 lines covering all 27 triggers in each tone, in the panda's voice (lazy by nature, on duty anyway; drift is "we" slipping). Slots: `{goal}`, `{app}` (read as a brand: "Instagram", not "instagram.com"), `{minutes}`, `{streak}`, `{deadline}`, `{when}`. The picker only uses lines whose slots are filled and doesn't repeat recent ones.
+- **Filter.** Every line, canned or AI, passes `crates/lines/src/filter.rs`: at most 140 characters, plain text, nothing about appearance, body, intelligence, identity or mental health, no swearing unless enabled. Tests run every library line through it with the longest possible slot values.
+- **Voice.** The Windows built-in voices (WinRT `SpeechSynthesizer`) at 0.9× speed: offline, free, already installed. Pick one in the main window. Acceptance: all 27 triggers × 3 tones are ready to play in under 1 second (53 ms average, 104 ms worst on the dev machine). The spec's Kokoro/Piper voices need the GPL espeak-ng phonemiser and a 100+ MB model, so they're left for v1.
+- **Quiet mode** shows the bubble without speaking; nothing is spoken while the panda is hidden. The talking animation lasts exactly as long as the audio.

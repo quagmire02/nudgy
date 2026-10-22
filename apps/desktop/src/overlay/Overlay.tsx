@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { CharacterState, HitRect, Moment, OverlayState, QuickReply } from "@nudgy/shared";
+import type { CharacterState, HitRect, Moment, OverlayState, QuickReply, Speaking } from "@nudgy/shared";
 import { Panda } from "./Panda";
 import { REPLY_LABELS, bubbleMillis, replyAction, speakingMillis } from "./replies";
 import { inTauri, invoke, listen, startDragging } from "./tauri";
@@ -26,28 +26,38 @@ export function Overlay({ preview }: { preview?: { state: OverlayState; moment: 
     }
   }, [preview]);
 
+  // The mouth moves for exactly as long as the audio plays.
+  const talkTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const talkFor = useCallback((ms: number) => {
+    clearTimeout(talkTimer.current);
+    setTalking(true);
+    talkTimer.current = setTimeout(() => setTalking(false), ms);
+  }, []);
+
   useEffect(() => {
     if (!inTauri) return;
     const stop = [
       listen<OverlayState>("overlay://state", setState),
-      listen<Moment>("overlay://moment", setMoment),
+      listen<Moment>("overlay://moment", (m) => {
+        clearTimeout(talkTimer.current);
+        setTalking(false);
+        setMoment(m);
+      }),
+      listen<Speaking>("overlay://speaking", (s) => talkFor(s.durationMs)),
     ];
     void invoke("overlay_ready");
     return () => stop.forEach((p) => void p.then((unlisten) => unlisten()));
-  }, []);
+  }, [talkFor]);
 
   // A moment while hidden is dropped: nothing shows during calls or fullscreen.
   useEffect(() => {
     if (!state.visible) setMoment(null);
   }, [state.visible]);
 
-  // Talk while the line is "spoken" (real speech events arrive in milestone 4).
+  // The browser preview has no audio: estimate the speaking time instead.
   useEffect(() => {
-    if (!moment || !moment.line.speak || state.quietMode) return setTalking(false);
-    setTalking(true);
-    const timer = setTimeout(() => setTalking(false), speakingMillis(moment.line.text));
-    return () => clearTimeout(timer);
-  }, [moment, state.quietMode]);
+    if (preview && moment?.line.speak) talkFor(speakingMillis(moment.line.text));
+  }, [preview, moment, talkFor]);
 
   // The bubble goes away on its own, but never while the cursor is on it.
   useEffect(() => {

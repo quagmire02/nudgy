@@ -5,7 +5,7 @@ import type { Tone } from "./Tone";
 
 export type Settings = { onboarded: boolean, tone: Tone, 
 /**
- * TTS voice id, e.g. `kokoro:af_heart`, or `sapi:default`.
+ * A Windows voice id from `list_voices`, or `default` for the system voice.
  */
 voice: string, 
 /**

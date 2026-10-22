@@ -339,7 +339,11 @@ impl Engine {
                 let key = event.foreground.key();
                 let run = self.run.as_mut().unwrap();
                 run.questioned.insert(title.clone());
-                let id = self.say(TriggerKind::DriftQuestion, now, out);
+                let (app, category) = (event.foreground.display_name(), class.category);
+                let id = self.say_with(TriggerKind::DriftQuestion, now, out, |c| {
+                    c.app = Some(app);
+                    c.category = Some(category);
+                });
                 self.run.as_mut().unwrap().questions.insert(id, (key, title));
             }
             return;
@@ -435,7 +439,11 @@ impl Engine {
             run.session.state = SessionState::Nudged;
             run.announced_return = false;
             out.push(Output::Session(run.session.clone()));
-            self.say(TriggerKind::BreakOverrun, now, out);
+            let (app, category) = (event.foreground.display_name(), class.category);
+            self.say_with(TriggerKind::BreakOverrun, now, out, |c| {
+                c.app = Some(app);
+                c.category = Some(category);
+            });
             return;
         }
 
@@ -626,7 +634,8 @@ impl Engine {
                 run.last_nudge = None;
                 run.session.state = SessionState::Focusing;
                 out.push(Output::Session(run.session.clone()));
-                self.say(TriggerKind::OverrideAck, now, out);
+                let app = event.foreground.display_name();
+                self.say_with(TriggerKind::OverrideAck, now, out, |c| c.app = Some(app));
             }
             UserAction::Snooze { minutes } => self.snooze(minutes, now, out),
             UserAction::Unsnooze => self.end_snooze(out, now),

@@ -1,23 +1,18 @@
-//! Test moments: make the panda react on demand, from the main window's
-//! "Test the panda" buttons. Same presentation and lines as real triggers,
-//! with a sample context.
+//! Test triggers: make the panda react on demand, from the main window's
+//! "Test the panda" buttons. Same presentation, lines and voice as real
+//! triggers, with a sample context.
 
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use nudgy_engine::present::presentation;
-use nudgy_shared::{
-    Category, DeadlineHint, LineSource, Moment, SpokenLine, Tone, Trigger, TriggerContext, TriggerKind,
-};
-
-use crate::lines;
+use nudgy_shared::{Category, DeadlineHint, Tone, Trigger, TriggerContext, TriggerKind};
 
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 
-pub fn moment(kind: TriggerKind, tone: Tone, quiet: bool) -> Moment {
-    let id = format!("demo-{}", NEXT_ID.fetch_add(1, Ordering::SeqCst));
+pub fn trigger(kind: TriggerKind, tone: Tone) -> Trigger {
     let p = presentation(kind);
-    let trigger = Trigger {
-        id: id.clone(),
+    Trigger {
+        id: format!("demo-{}", NEXT_ID.fetch_add(1, Ordering::SeqCst)),
         kind,
         at: nudgy_activity::now_ms(),
         session_id: None,
@@ -29,12 +24,10 @@ pub fn moment(kind: TriggerKind, tone: Tone, quiet: bool) -> Moment {
             minutes: Some(6),
             streak: Some(3),
             nudge_level: 1,
-            deadline: Some(DeadlineHint { title: "Quiz".into(), in_hours: 48 }),
+            deadline: Some(DeadlineHint { title: "Quiz".into(), in_hours: 30 }),
         },
         animation: p.animation,
         replies: p.replies,
         ai_eligible: false,
-    };
-    let text = lines::placeholder(&trigger);
-    Moment { trigger, line: SpokenLine { trigger_id: id, text, source: LineSource::Canned, speak: !quiet } }
+    }
 }

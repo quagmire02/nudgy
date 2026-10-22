@@ -1,0 +1,11 @@
+[package]
+name = "nudgy-lines"
+description = "The canned line library, slot filling and the content filter every spoken line passes"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+nudgy-shared = { path = "../../packages/shared" }
+serde.workspace = true
+serde_json.workspace = true

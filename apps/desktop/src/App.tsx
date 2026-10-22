@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import type { ActivityEvent, CharacterSize, ExtensionStatus, Settings, Tone, TriggerKind } from "@nudgy/shared";
+import type { ActivityEvent, CharacterSize, ExtensionStatus, Settings, Tone, TriggerKind, VoiceOption } from "@nudgy/shared";
 import { SessionCard } from "./SessionCard";
 import "./App.css";
 
@@ -52,6 +52,7 @@ function duration(ms: number): string {
 function App() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [pandaHidden, setPandaHidden] = useState(false);
+  const [voices, setVoices] = useState<VoiceOption[]>([]);
   const [current, setCurrent] = useState<ActivityEvent | null>(null);
   const [recent, setRecent] = useState<ActivityEvent[]>([]);
   const [extension, setExtension] = useState<ExtensionStatus | null>(null);
@@ -72,6 +73,7 @@ function App() {
   useEffect(() => {
     void invoke<Settings>("get_settings").then(setSettings);
     void invoke<boolean>("panda_hidden").then(setPandaHidden);
+    void invoke<VoiceOption[]>("list_voices").then(setVoices);
     void refresh();
     const timer = setInterval(refresh, 2000);
     return () => clearInterval(timer);
@@ -118,6 +120,17 @@ function App() {
                 <option value="gentle">Gentle</option>
                 <option value="coach">Coach</option>
                 <option value="savage">Savage</option>
+              </select>
+            </label>
+            <label>
+              Voice{" "}
+              <select value={settings.voice} onChange={(e) => update({ voice: e.target.value })}>
+                <option value="default">System default</option>
+                {voices.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name} ({v.language})
+                  </option>
+                ))}
               </select>
             </label>
           </div>

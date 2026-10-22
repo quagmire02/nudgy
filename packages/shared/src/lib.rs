@@ -19,6 +19,7 @@ pub mod reminder;
 pub mod session;
 pub mod settings;
 pub mod trigger;
+pub mod ui;
 
 pub use activity::*;
 pub use classify::*;
@@ -29,3 +30,4 @@ pub use reminder::*;
 pub use session::*;
 pub use settings::*;
 pub use trigger::*;
+pub use ui::*;

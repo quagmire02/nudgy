@@ -1,12 +1,11 @@
 //! Things the user can do from the tray, hotkeys, the overlay and the main
-//! window. Each updates state, persists it and refreshes every surface.
+//! window. App-level ones (quiet mode, hiding the panda, pausing tracking)
+//! are handled here; everything about the session goes to the engine.
 
-use std::sync::atomic::Ordering;
-use std::time::Duration;
-
-use nudgy_shared::{CharacterState, UserAction};
+use nudgy_shared::UserAction;
 use tauri::{AppHandle, Manager};
 
+use crate::brain::Msg;
 use crate::{Core, overlay};
 
 pub fn open_main(app: &AppHandle) {
@@ -19,14 +18,16 @@ pub fn open_main(app: &AppHandle) {
 
 pub fn set_quiet(app: &AppHandle, on: bool) {
     let core = app.state::<Core>();
-    {
+    let settings = {
         let mut settings = core.settings.lock().unwrap();
         settings.quiet_mode = on;
         core.store.save("settings.json", &*settings);
-    }
+        settings.clone()
+    };
     if let Some(tray) = core.tray.lock().unwrap().as_ref() {
         let _ = tray.quiet.set_checked(on);
     }
+    send(app, Msg::Settings(settings));
     overlay::push_state(app);
 }
 
@@ -63,37 +64,18 @@ pub fn set_tracking_paused(app: &AppHandle, paused: bool) -> bool {
     paused
 }
 
-/// Visor down for `minutes`, then back to dozing (unless snoozed again).
-pub fn snooze(app: &AppHandle, minutes: u32) {
-    let core = app.state::<Core>();
-    let generation = core.snooze_generation.fetch_add(1, Ordering::SeqCst) + 1;
-    overlay::set_base(app, CharacterState::Snoozed);
-    let app = app.clone();
-    std::thread::spawn(move || {
-        std::thread::sleep(Duration::from_secs(minutes as u64 * 60));
-        if app.state::<Core>().snooze_generation.load(Ordering::SeqCst) == generation {
-            overlay::set_base(&app, CharacterState::IdleDozing);
-        }
-    });
+pub fn send(app: &AppHandle, msg: Msg) {
+    if let Some(brain) = app.state::<Core>().brain.lock().unwrap().as_ref() {
+        brain.send(msg);
+    }
 }
 
-pub fn unsnooze(app: &AppHandle) {
-    app.state::<Core>().snooze_generation.fetch_add(1, Ordering::SeqCst);
-    overlay::set_base(app, CharacterState::IdleDozing);
-}
-
-/// Until the session engine lands (milestone 3), only the actions that don't
-/// need a session do anything.
 pub fn apply(app: &AppHandle, action: UserAction) {
     match action {
-        UserAction::Snooze { minutes } => snooze(app, minutes),
-        UserAction::Unsnooze => unsnooze(app),
         UserAction::SetQuietMode { on } => set_quiet(app, on),
         UserAction::SetTrackingPaused { paused } => {
             set_tracking_paused(app, paused);
         }
-        UserAction::TakeBreak { .. } => overlay::set_base(app, CharacterState::OnBreak),
-        UserAction::EndBreak | UserAction::BackToWork => overlay::set_base(app, CharacterState::IdleDozing),
-        other => log::info!("{other:?}: the session engine arrives in milestone 3"),
+        session_action => send(app, Msg::Action(session_action)),
     }
 }

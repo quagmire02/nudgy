@@ -1,0 +1,13 @@
+[
+  { "dayStreak": 0 },
+  {
+    "session": {
+      "id": "s1792576800000", "goal": { "text": "Thesis chapter 3", "minutes": 120 }, "tone": "coach", "state": "drifting",
+      "started": 1792576800000, "nudgeLevel": 0, "snoozes": 0,
+      "stats": { "focused": 1500000, "neutral": 60000, "distracting": 90000, "onBreak": 0, "idle": 0, "drift": 60000,
+                 "currentStreak": 0, "longestStreak": 1500000, "nudges": 0, "topDistractions": [] }
+    },
+    "classification": { "label": "distracting", "category": "social", "confidence": 0.9, "reason": "rule", "ambiguous": false },
+    "dayStreak": 3
+  }
+]

@@ -66,7 +66,7 @@ fn contracts_round_trip_and_export() {
     export!(
         ActivityEvent, BrowserHeartbeat, ExtensionStatus, Classification, Override, Session, Trigger, UserAction,
         LineRequest, LineResponse, ApiError, RegisterRequest, RegisterResponse, SpokenLine,
-        ReminderDraft, Reminder, Settings, OverlayState, Moment, HitRect,
+        ReminderDraft, Reminder, Settings, OverlayState, Moment, HitRect, SessionView,
     );
 
     let fixtures = [
@@ -90,6 +90,7 @@ fn contracts_round_trip_and_export() {
         check_fixture::<OverlayState>("overlay_state.json", "overlayStates", &cfg),
         check_fixture::<Moment>("moment.json", "moments", &cfg),
         check_fixture::<HitRect>("hit_rect.json", "hitRects", &cfg),
+        check_fixture::<SessionView>("session_view.json", "sessionViews", &cfg),
     ];
 
     let mut ts = String::from(HEADER);

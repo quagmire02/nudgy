@@ -1,0 +1,17 @@
+{
+  "name": "Thesis with long reading and a lecture",
+  "goal": "Thesis chapter 3: literature review",
+  "minutes": 120,
+  "segments": [
+    { "for": "15m", "web": "overleaf.com", "title": "chapter3.tex - Overleaf", "truth": "work" },
+    { "for": "6m", "web": "scholar.google.com", "title": "literature review machine learning education - Google Scholar", "truth": "work" },
+    { "for": "8m", "app": "acrord32.exe", "title": "smith2024.pdf - Adobe Acrobat Reader", "idle": true, "truth": "work" },
+    { "for": "4m", "web": "overleaf.com", "title": "chapter3.tex - Overleaf", "truth": "work" },
+    { "for": "12m", "web": "youtube.com", "title": "How to write a literature review for your thesis", "truth": "work" },
+    { "for": "30s", "web": "facebook.com", "title": "Facebook", "truth": "distraction" },
+    { "for": "10m", "web": "overleaf.com", "title": "chapter3.tex - Overleaf", "truth": "work" },
+    { "for": "7m", "web": "facebook.com", "title": "Facebook", "truth": "distraction", "expectNudge": true },
+    { "for": "10m", "web": "overleaf.com", "title": "chapter3.tex - Overleaf", "truth": "work" },
+    { "for": "2m", "app": "explorer.exe", "title": "Downloads", "truth": "neutral" }
+  ]
+}

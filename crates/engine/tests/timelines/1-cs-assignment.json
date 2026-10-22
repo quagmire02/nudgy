@@ -1,0 +1,20 @@
+{
+  "name": "CS assignment with a related tutorial",
+  "goal": "Python assignment: linked lists and recursion",
+  "minutes": 90,
+  "segments": [
+    { "for": "12m", "app": "code.exe", "title": "linked_list.py - assignment - Visual Studio Code", "truth": "work" },
+    { "for": "3m", "web": "stackoverflow.com", "title": "python - Reverse a linked list recursively - Stack Overflow", "truth": "work" },
+    { "for": "20s", "app": "whatsapp.exe", "title": "WhatsApp", "truth": "distraction" },
+    { "for": "8m", "app": "code.exe", "title": "linked_list.py - assignment - Visual Studio Code", "truth": "work" },
+    { "for": "6m", "web": "youtube.com", "title": "Recursion in Python explained simply", "truth": "work" },
+    { "for": "25s", "web": "instagram.com", "title": "Instagram", "truth": "distraction" },
+    { "for": "10m", "app": "code.exe", "title": "test_linked_list.py - assignment - Visual Studio Code", "truth": "work" },
+    { "for": "8m", "web": "instagram.com", "title": "Instagram", "truth": "distraction", "expectNudge": true },
+    { "for": "1m", "web": "docs.python.org", "title": "5. Data Structures — Python 3 documentation", "truth": "work" },
+    { "for": "6m", "app": "code.exe", "title": "linked_list.py - assignment - Visual Studio Code", "truth": "work" },
+    { "for": "2m", "web": "claude.ai", "title": "Explain tail recursion - Claude", "truth": "work" },
+    { "for": "3m", "app": "spotify.exe", "title": "Spotify Premium", "truth": "neutral" },
+    { "for": "10m", "app": "code.exe", "title": "linked_list.py - assignment - Visual Studio Code", "truth": "work" }
+  ]
+}

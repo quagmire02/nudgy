@@ -20,6 +20,7 @@ import type { Settings } from "./Settings";
 import type { OverlayState } from "./OverlayState";
 import type { Moment } from "./Moment";
 import type { HitRect } from "./HitRect";
+import type { SessionView } from "./SessionView";
 
 export const activityEvents: ActivityEvent[] = [
   {
@@ -664,5 +665,45 @@ export const hitRects: HitRect[] = [
     "width": 88.6,
     "x": 212.5,
     "y": 196.0
+  }
+];
+
+export const sessionViews: SessionView[] = [
+  {
+    "dayStreak": 0
+  },
+  {
+    "classification": {
+      "ambiguous": false,
+      "category": "social",
+      "confidence": 0.9,
+      "label": "distracting",
+      "reason": "rule"
+    },
+    "dayStreak": 3,
+    "session": {
+      "goal": {
+        "minutes": 120,
+        "text": "Thesis chapter 3"
+      },
+      "id": "s1792576800000",
+      "nudgeLevel": 0,
+      "snoozes": 0,
+      "started": 1792576800000,
+      "state": "drifting",
+      "stats": {
+        "currentStreak": 0,
+        "distracting": 90000,
+        "drift": 60000,
+        "focused": 1500000,
+        "idle": 0,
+        "longestStreak": 1500000,
+        "neutral": 60000,
+        "nudges": 0,
+        "onBreak": 0,
+        "topDistractions": []
+      },
+      "tone": "coach"
+    }
   }
 ];

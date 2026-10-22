@@ -80,6 +80,8 @@ pub enum QuickReply {
     Yes,
     No,
     Dismiss,
+    /// Ends the session (offered when the planned time is up).
+    EndSession,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]

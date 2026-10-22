@@ -36,8 +36,9 @@ pub struct Overlay {
 }
 
 /// Calls, fullscreen and presentations hide the panda, and so do lock and sleep.
-pub fn hides_panda(event: &ActivityEvent) -> bool {
-    event.silences_character() || event.presence == Presence::Asleep
+#[cfg(test)]
+fn hides_panda(event: &ActivityEvent) -> bool {
+    hide_reason(event).is_some()
 }
 
 /// Default spot: bottom-right of the work area (above the taskbar).
@@ -123,9 +124,28 @@ pub fn push_state(app: &AppHandle) {
     }
 }
 
-pub fn set_context_hidden(app: &AppHandle, hidden: bool) {
+/// Why the panda must hide for this activity, if it must.
+pub fn hide_reason(event: &ActivityEvent) -> Option<&'static str> {
+    let f = &event.flags;
+    match () {
+        _ if f.mic_in_use => Some("microphone in use"),
+        _ if f.presenting => Some("presenting"),
+        _ if f.fullscreen => Some("fullscreen"),
+        _ if event.presence == Presence::Locked => Some("locked"),
+        _ if event.presence == Presence::Asleep => Some("asleep"),
+        _ => None,
+    }
+}
+
+pub fn set_context_hidden(app: &AppHandle, event: &ActivityEvent) {
+    let reason = hide_reason(event);
+    let hidden = reason.is_some();
     let core = app.state::<Core>();
     if core.overlay.context_hidden.swap(hidden, Ordering::SeqCst) != hidden {
+        match reason {
+            Some(why) => log::info!("panda hides: {why} ({})", event.foreground.key()),
+            None => log::info!("panda shows again"),
+        }
         push_state(app);
     }
 }
@@ -242,6 +262,8 @@ mod tests {
         assert!(hides_panda(&event(Presence::Active, ContextFlags { presenting: true, ..none })));
         assert!(hides_panda(&event(Presence::Locked, none)));
         assert!(hides_panda(&event(Presence::Asleep, none)));
+        assert_eq!(hide_reason(&event(Presence::Active, ContextFlags { mic_in_use: true, ..none })), Some("microphone in use"));
+        assert_eq!(hide_reason(&event(Presence::Idle, none)), None);
     }
 
     #[test]

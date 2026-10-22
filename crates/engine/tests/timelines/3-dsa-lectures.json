@@ -1,0 +1,14 @@
+{
+  "name": "DSA lectures on YouTube",
+  "goal": "Study DSA: graphs and dynamic programming",
+  "minutes": 90,
+  "segments": [
+    { "for": "20m", "web": "youtube.com", "title": "Lecture 12: Dijkstra's Algorithm | Graph Theory", "truth": "work" },
+    { "for": "5m", "web": "leetcode.com", "title": "Network Delay Time - LeetCode", "truth": "work" },
+    { "for": "15m", "web": "youtube.com", "title": "Dynamic Programming in 20 minutes", "truth": "work" },
+    { "for": "4m", "web": "codeforces.com", "title": "Problem - 1915E - Codeforces", "truth": "work" },
+    { "for": "7m", "web": "youtube.com", "title": "Top 10 Funny Fails 2026", "truth": "distraction", "expectNudge": true },
+    { "for": "3m", "web": "youtube.com", "title": "Funny graph memes for programmers", "truth": "distraction" },
+    { "for": "15m", "app": "code.exe", "title": "dp.cpp - practice - Visual Studio Code", "truth": "work" }
+  ]
+}

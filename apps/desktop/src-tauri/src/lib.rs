@@ -1,15 +1,16 @@
 mod actions;
+mod brain;
 mod demo;
+mod lines;
 mod overlay;
 mod store;
 mod tray;
 
 use std::sync::Mutex;
-use std::sync::atomic::AtomicU64;
 use std::time::Duration;
 
 use nudgy_activity::{ActivityService, ServiceConfig, WindowsProbe};
-use nudgy_shared::{ActivityEvent, ExtensionStatus, HitRect, Settings, TriggerKind, UserAction, constants};
+use nudgy_shared::{ActivityEvent, ExtensionStatus, HitRect, SessionView, Settings, TriggerKind, UserAction, constants};
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut, ShortcutState};
 
@@ -25,7 +26,8 @@ pub struct Core {
     pub activity: Mutex<Option<ActivityService>>,
     pub overlay: overlay::Overlay,
     pub tray: Mutex<Option<tray::TrayItems>>,
-    pub snooze_generation: AtomicU64,
+    /// The focus engine, on its own thread.
+    pub brain: Mutex<Option<brain::Brain>>,
 }
 
 type CommandResult<T> = Result<T, String>;
@@ -55,8 +57,14 @@ fn update_settings(app: AppHandle, core: tauri::State<Core>, settings: Settings)
     if let Some(tray) = core.tray.lock().unwrap().as_ref() {
         let _ = tray.quiet.set_checked(settings.quiet_mode);
     }
+    actions::send(&app, brain::Msg::Settings(settings.clone()));
     overlay::push_state(&app);
     settings
+}
+
+#[tauri::command]
+fn session_view(core: tauri::State<Core>) -> SessionView {
+    core.brain.lock().unwrap().as_ref().map(|b| b.view()).unwrap_or_default()
 }
 
 #[tauri::command]
@@ -168,7 +176,7 @@ fn follow_activity(app: &AppHandle) {
         .name("nudgy-overlay-context".into())
         .spawn(move || {
             for update in updates {
-                overlay::set_context_hidden(&app, overlay::hides_panda(&update.current));
+                overlay::set_context_hidden(&app, &update.current);
             }
         })
         .expect("spawn overlay context thread");
@@ -220,7 +228,7 @@ pub fn run() {
                 activity: Mutex::new(None),
                 overlay: overlay::Overlay::default(),
                 tray: Mutex::new(None),
-                snooze_generation: AtomicU64::new(0),
+                brain: Mutex::new(None),
             });
             let handle = app.handle().clone();
             *app.state::<Core>().activity.lock().unwrap() = start_activity(&handle);
@@ -228,6 +236,7 @@ pub fn run() {
             *app.state::<Core>().tray.lock().unwrap() = Some(tray::build(&handle)?);
             register_hotkeys(&handle)?;
             follow_activity(&handle);
+            *app.state::<Core>().brain.lock().unwrap() = Some(brain::start(&handle));
             Ok(())
         })
         .on_window_event(|window, event| match (window.label(), event) {
@@ -254,6 +263,7 @@ pub fn run() {
             set_panda_hidden,
             panda_hidden,
             demo_moment,
+            session_view,
             overlay_ready,
             overlay_set_regions,
             panda_clicked,
@@ -262,6 +272,11 @@ pub fn run() {
         .expect("error while building Nudgy")
         .run(|app, event| {
             if let RunEvent::Exit = event {
+                // End a running session so it is saved complete.
+                if let Some(brain) = app.state::<Core>().brain.lock().unwrap().take() {
+                    brain.send(brain::Msg::Stop);
+                    std::thread::sleep(Duration::from_millis(300));
+                }
                 // Close the open event so the last seconds aren't lost.
                 if let Some(mut service) = app.state::<Core>().activity.lock().unwrap().take() {
                     service.stop();

@@ -10,3 +10,6 @@ dist/
 !.env.example
 .DS_Store
 .idea/
+
+# Downloaded by scripts/fetch-model.mjs
+data/models/

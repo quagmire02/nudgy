@@ -1,3 +1,9 @@
+# Text files are stored with LF and checked out with LF on every OS.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.icns binary
+
 # Vendored sources stay byte-exact: crates/tomcrypt/build.rs compares the
 # libtomcrypt headers byte for byte with the pinned sqlcipher-src crate.
 third_party/** -text

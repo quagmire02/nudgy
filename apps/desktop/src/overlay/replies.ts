@@ -12,6 +12,7 @@ export const REPLY_LABELS: Record<QuickReply, string> = {
   yes: "Yes",
   no: "No",
   dismiss: "OK",
+  end_session: "End session",
 };
 
 export function replyAction(reply: QuickReply, triggerId: string): UserAction {
@@ -29,6 +30,8 @@ export function replyAction(reply: QuickReply, triggerId: string): UserAction {
       return { type: "answer", triggerId, yes: reply === "yes" };
     case "dismiss":
       return { type: "dismiss", triggerId };
+    case "end_session":
+      return { type: "end_session" };
   }
 }
 

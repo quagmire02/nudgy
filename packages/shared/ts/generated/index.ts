@@ -41,6 +41,7 @@ export type { SeenBrowser } from "./SeenBrowser";
 export type { Session } from "./Session";
 export type { SessionState } from "./SessionState";
 export type { SessionStats } from "./SessionStats";
+export type { SessionView } from "./SessionView";
 export type { Settings } from "./Settings";
 export type { SpokenLine } from "./SpokenLine";
 export type { Tone } from "./Tone";

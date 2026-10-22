@@ -95,3 +95,34 @@ select {
   font: inherit;
   padding: 2px 4px;
 }
+
+.start {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.start input {
+  flex: 1 1 260px;
+  padding: 6px 10px;
+  font: inherit;
+  border: 1.5px solid currentColor;
+  border-radius: 8px;
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eef3e8;
+  color: #3f6f2f;
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

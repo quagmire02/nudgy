@@ -4,6 +4,8 @@ use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager, Wry};
 
+use nudgy_shared::{UserAction, constants};
+
 use crate::{Core, actions};
 
 /// Check items whose state changes from elsewhere (hotkeys, the main window).
@@ -19,6 +21,8 @@ pub fn build(app: &AppHandle) -> tauri::Result<TrayItems> {
 
     let show = CheckMenuItem::with_id(app, "show", "Show the panda", true, !hidden, None::<&str>)?;
     let quiet = CheckMenuItem::with_id(app, "quiet", "Quiet mode (bubble only)\tCtrl+Alt+Q", true, quiet_on, None::<&str>)?;
+    let take_break = MenuItem::with_id(app, "break", "Take a 5-minute break", true, None::<&str>)?;
+    let end_session = MenuItem::with_id(app, "end", "End the session", true, None::<&str>)?;
     let snooze15 = MenuItem::with_id(app, "snooze15", "Snooze 15 minutes", true, None::<&str>)?;
     let snooze60 = MenuItem::with_id(app, "snooze60", "Snooze 1 hour", true, None::<&str>)?;
     let pause = CheckMenuItem::with_id(app, "pause", "Pause tracking", true, false, None::<&str>)?;
@@ -28,6 +32,8 @@ pub fn build(app: &AppHandle) -> tauri::Result<TrayItems> {
         app,
         &[
             &open,
+            &take_break,
+            &end_session,
             &PredefinedMenuItem::separator(app)?,
             &show,
             &quiet,
@@ -65,8 +71,10 @@ fn on_menu(app: &AppHandle, id: &str) {
             actions::set_panda_hidden(app, !hidden);
         }
         "quiet" => actions::toggle_quiet(app),
-        "snooze15" => actions::snooze(app, 15),
-        "snooze60" => actions::snooze(app, 60),
+        "break" => actions::apply(app, UserAction::TakeBreak { minutes: constants::DEFAULT_BREAK_MIN }),
+        "end" => actions::apply(app, UserAction::EndSession),
+        "snooze15" => actions::apply(app, UserAction::Snooze { minutes: 15 }),
+        "snooze60" => actions::apply(app, UserAction::Snooze { minutes: 60 }),
         "pause" => {
             let paused = core.activity.lock().unwrap().as_ref().is_some_and(|s| s.is_paused());
             actions::set_tracking_paused(app, !paused);

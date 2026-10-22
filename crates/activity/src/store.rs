@@ -5,7 +5,7 @@
 use std::path::Path;
 
 use chrono::{Local, TimeZone};
-use nudgy_shared::{ActivityEvent, Presence, UnixMs, constants};
+use nudgy_shared::{ActivityEvent, Override, Presence, Session, SessionState, UnixMs, constants};
 use rusqlite::{Connection, OptionalExtension, params};
 
 use crate::recorder::Change;
@@ -13,7 +13,7 @@ use crate::recorder::Change;
 // Links libtomcrypt, SQLCipher's crypto provider.
 use nudgy_tomcrypt as _;
 
-const SCHEMA_VERSION: i64 = 1;
+const SCHEMA_VERSION: i64 = 2;
 const DAY_MS: UnixMs = 86_400_000;
 
 #[derive(Debug, thiserror::Error)]
@@ -78,6 +78,24 @@ impl Store {
                     name     TEXT    NOT NULL,
                     duration INTEGER NOT NULL,
                     PRIMARY KEY (day, key)
+                 );",
+            )?;
+        }
+        if version < 2 {
+            self.conn.execute_batch(
+                "CREATE TABLE sessions (
+                    id      TEXT    PRIMARY KEY,
+                    started INTEGER NOT NULL,
+                    ended   INTEGER,
+                    updated INTEGER NOT NULL,
+                    session TEXT    NOT NULL  -- Session as JSON
+                 );
+                 CREATE INDEX sessions_started ON sessions(started);
+                 CREATE TABLE overrides (
+                    key      TEXT    NOT NULL,
+                    goal     TEXT    NOT NULL,
+                    override TEXT    NOT NULL,  -- Override as JSON
+                    PRIMARY KEY (key, goal)
                  );",
             )?;
         }
@@ -166,9 +184,61 @@ impl Store {
         Ok(rows.collect::<rusqlite::Result<_>>()?)
     }
 
+    /// Inserts or updates a focus session.
+    pub fn save_session(&self, session: &Session, now: UnixMs) -> Result<()> {
+        self.conn.execute(
+            "INSERT INTO sessions (id, started, ended, updated, session) VALUES (?1, ?2, ?3, ?4, ?5)
+             ON CONFLICT (id) DO UPDATE SET ended = excluded.ended, updated = excluded.updated, session = excluded.session",
+            params![session.id, session.started, session.ended, now, serde_json::to_string(session)?],
+        )?;
+        Ok(())
+    }
+
+    /// Sessions that started in `[from, to)`, oldest first.
+    pub fn sessions_between(&self, from: UnixMs, to: UnixMs) -> Result<Vec<Session>> {
+        let mut stmt =
+            self.conn.prepare("SELECT session FROM sessions WHERE started >= ?1 AND started < ?2 ORDER BY started")?;
+        let rows = stmt.query_map(params![from, to], |r| r.get::<_, String>(0))?;
+        rows.map(|json| Ok(serde_json::from_str(&json?)?)).collect()
+    }
+
+    /// Sessions the app never ended (crash, power cut) are closed at their
+    /// last save. Returns how many.
+    pub fn close_dangling_sessions(&self) -> Result<usize> {
+        let dangling: Vec<(String, UnixMs)> = {
+            let mut stmt = self.conn.prepare("SELECT session, updated FROM sessions WHERE ended IS NULL")?;
+            stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<rusqlite::Result<_>>()?
+        };
+        for (json, updated) in &dangling {
+            let mut session: Session = serde_json::from_str(json)?;
+            session.ended = Some(*updated);
+            session.state = SessionState::Ended;
+            session.mute_reason = None;
+            self.save_session(&session, *updated)?;
+        }
+        Ok(dangling.len())
+    }
+
+    pub fn save_override(&self, ov: &Override) -> Result<()> {
+        self.conn.execute(
+            "INSERT INTO overrides (key, goal, override) VALUES (?1, ?2, ?3)
+             ON CONFLICT (key, goal) DO UPDATE SET override = excluded.override",
+            params![ov.key, ov.goal, serde_json::to_string(ov)?],
+        )?;
+        Ok(())
+    }
+
+    pub fn overrides(&self) -> Result<Vec<Override>> {
+        let mut stmt = self.conn.prepare("SELECT override FROM overrides")?;
+        let rows = stmt.query_map([], |r| r.get::<_, String>(0))?;
+        rows.map(|json| Ok(serde_json::from_str(&json?)?)).collect()
+    }
+
     /// "Delete all my data": every event and total, then compacts the file.
     pub fn delete_all(&mut self) -> Result<()> {
-        self.conn.execute_batch("DELETE FROM events; DELETE FROM daily_totals; VACUUM;")?;
+        self.conn.execute_batch(
+            "DELETE FROM events; DELETE FROM daily_totals; DELETE FROM sessions; DELETE FROM overrides; VACUUM;",
+        )?;
         self.last_id = None;
         Ok(())
     }
@@ -273,5 +343,58 @@ mod tests {
         // The next update has nothing to update, so it inserts.
         store.apply(&[Change::UpdateLast(event(5_000, 1_000, "b.com"))]).unwrap();
         assert_eq!(store.recent(10).unwrap().len(), 1);
+    }
+}
+
+#[cfg(test)]
+mod session_tests {
+    use super::*;
+    use nudgy_shared::{Goal, Label, SessionStats, Tone};
+
+    fn session(id: &str, started: UnixMs) -> Session {
+        Session {
+            id: id.into(),
+            goal: Goal { text: "Thesis".into(), minutes: 60 },
+            tone: Tone::Coach,
+            state: SessionState::Focusing,
+            mute_reason: None,
+            started,
+            ended: None,
+            break_until: None,
+            snooze_until: None,
+            nudge_level: 0,
+            snoozes: 0,
+            stats: SessionStats::default(),
+        }
+    }
+
+    #[test]
+    fn sessions_save_update_and_close_after_a_crash() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(&dir.path().join("s.db"), &[3; 32]).unwrap();
+        let mut s = session("s1", 1_000);
+        store.save_session(&s, 1_000).unwrap();
+        s.stats.focused = 60_000;
+        store.save_session(&s, 61_000).unwrap();
+        store.save_session(&session("s2", 5_000_000), 5_000_000).unwrap();
+
+        let found = store.sessions_between(0, 2_000).unwrap();
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].stats.focused, 60_000);
+
+        assert_eq!(store.close_dangling_sessions().unwrap(), 2);
+        let s1 = &store.sessions_between(0, 2_000).unwrap()[0];
+        assert_eq!((s1.ended, s1.state), (Some(61_000), SessionState::Ended));
+        assert_eq!(store.close_dangling_sessions().unwrap(), 0);
+    }
+
+    #[test]
+    fn overrides_persist_one_per_site_and_goal() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(&dir.path().join("o.db"), &[3; 32]).unwrap();
+        let ov = Override { key: "web:instagram.com".into(), goal: "client posts".into(), label: Label::Focused, created: 1 };
+        store.save_override(&ov).unwrap();
+        store.save_override(&Override { created: 2, ..ov.clone() }).unwrap();
+        assert_eq!(store.overrides().unwrap(), vec![Override { created: 2, ..ov }]);
     }
 }

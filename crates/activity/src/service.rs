@@ -149,6 +149,11 @@ impl ActivityService {
         self.inner.bridge.status(now_ms())
     }
 
+    /// Runs `f` with the database (sessions, overrides, reports).
+    pub fn with_store<T>(&self, f: impl FnOnce(&mut Store) -> T) -> T {
+        f(&mut self.inner.store.lock().unwrap())
+    }
+
     pub fn delete_all(&self) -> Result<(), StoreError> {
         self.inner.store.lock().unwrap().delete_all()
     }

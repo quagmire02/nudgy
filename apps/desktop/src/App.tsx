@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type { ActivityEvent, CharacterSize, ExtensionStatus, Settings, Tone, TriggerKind } from "@nudgy/shared";
+import { SessionCard } from "./SessionCard";
 import "./App.css";
 
 // The main window. Session controls arrive with the engine (milestone 3),
@@ -89,6 +90,8 @@ function App() {
     <main className="container">
       <h1>Nudgy</h1>
       {error && <p className="error">{error}</p>}
+
+      <SessionCard />
 
       <section>
         <h2>Panda</h2>

@@ -1,0 +1,17 @@
+{
+  "name": "Lab report with a group call, a Netflix break and a lock",
+  "goal": "Physics lab report",
+  "minutes": 90,
+  "segments": [
+    { "for": "10m", "app": "winword.exe", "title": "lab_report.docx - Word", "truth": "work" },
+    { "for": "20m", "app": "teams.exe", "title": "Lab group call | Microsoft Teams", "mic": true, "truth": "work" },
+    { "for": "8m", "app": "excel.exe", "title": "readings.xlsx - Excel", "truth": "work" },
+    { "action": "take_break", "minutes": 10 },
+    { "for": "10m", "web": "netflix.com", "title": "Netflix", "fullscreen": true, "truth": "break" },
+    { "for": "2m", "app": "winword.exe", "title": "lab_report.docx - Word", "truth": "work" },
+    { "for": "7m", "app": "discord.exe", "title": "#memes - Discord", "truth": "distraction", "expectNudge": true },
+    { "for": "15m", "app": "winword.exe", "title": "lab_report.docx - Word", "truth": "work" },
+    { "for": "3m", "locked": true, "truth": "away" },
+    { "for": "5m", "app": "winword.exe", "title": "lab_report.docx - Word", "truth": "work" }
+  ]
+}

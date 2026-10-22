@@ -1,0 +1,13 @@
+{
+  "name": "Marketer whose job is Instagram",
+  "goal": "Client campaign posts for Daraz",
+  "minutes": 90,
+  "segments": [
+    { "for": "15m", "app": "figma.exe", "title": "Daraz campaign - Figma", "truth": "work" },
+    { "for": "10m", "web": "instagram.com", "title": "Instagram", "truth": "work" },
+    { "for": "10m", "web": "canva.com", "title": "Daraz post 3 - Canva", "truth": "work" },
+    { "for": "8m", "web": "instagram.com", "title": "Instagram", "truth": "work" },
+    { "for": "12m", "web": "reddit.com", "title": "r/funny", "truth": "distraction", "expectNudge": true },
+    { "for": "15m", "app": "figma.exe", "title": "Daraz campaign - Figma", "truth": "work" }
+  ]
+}

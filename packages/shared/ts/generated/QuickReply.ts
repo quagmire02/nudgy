@@ -3,4 +3,4 @@
 /**
  * Buttons under a bubble. The overlay maps each to a `UserAction`.
  */
-export type QuickReply = "back_to_work" | "take_break" | "actually_working" | "snooze" | "yes" | "no" | "dismiss";
+export type QuickReply = "back_to_work" | "take_break" | "actually_working" | "snooze" | "yes" | "no" | "dismiss" | "end_session";

@@ -1,0 +1,25 @@
+[package]
+name = "nudgy-engine"
+description = "Classifier and session engine: judges activity against the goal and decides when the panda speaks"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = []
+# Title-vs-goal similarity with all-MiniLM-L6-v2 on ONNX Runtime.
+embeddings = ["dep:ort"]
+
+[dependencies]
+nudgy-shared = { path = "../../packages/shared" }
+serde.workspace = true
+serde_json.workspace = true
+ort = { version = "=2.0.0-rc.15", optional = true }
+
+[[example]]
+name = "calibrate"
+required-features = ["embeddings"]
+
+[[example]]
+name = "pairs"
+required-features = ["embeddings"]

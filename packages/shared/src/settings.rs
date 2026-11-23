@@ -33,7 +33,7 @@ impl Default for Settings {
             onboarded: false,
             tone: Tone::Coach,
             character_size: CharacterSize::M,
-            drift_threshold_min: constants::DRIFT_THRESHOLD_MS / 60_000,
+            drift_threshold_min: 2,
             cloud_lines: true,
             share_titles_with_cloud: false,
             cloud_reminder_fallback: false,

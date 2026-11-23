@@ -159,5 +159,5 @@ fn constants_match_the_spec() {
     assert_eq!(constants::WAKE_QUIET_MS, 60 * 1000);
     assert_eq!(constants::LINE_MAX_CHARS, 140);
     assert_eq!(constants::RAW_EVENT_RETENTION_DAYS, 30);
-    assert_eq!(Settings::default().drift_threshold_min, 5);
+    assert_eq!(Settings::default().drift_threshold_min, 2);
 }

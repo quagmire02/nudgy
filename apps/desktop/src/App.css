@@ -361,6 +361,9 @@ code { padding: 1px 6px; border-radius: 6px; background: var(--surface-2); font-
 .progress-label { display: flex; align-items: center; gap: 6px; margin: 6px 0 14px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .judged { margin-top: 12px; font-size: 13.5px; color: var(--muted); }
 .judged strong { color: var(--ink); }
+.judged.distracting { color: var(--coral); font-weight: 700; }
+.judged.focused { color: var(--green-deep); }
+.start .toggle-row { margin-top: 6px; }
 
 .now-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 .now-name { font-size: 17px; font-weight: 900; }

@@ -113,7 +113,7 @@ function App() {
       </nav>
 
       <div className="content">
-        {tab === "focus" && <FocusTab view={view} />}
+        {tab === "focus" && <FocusTab view={view} thresholdMin={settings.driftThresholdMin} />}
         {tab === "reminders" && <Reminders toast={showToast} />}
         {tab === "week" && <Reports toast={showToast} />}
         {tab === "settings" && (

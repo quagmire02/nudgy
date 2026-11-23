@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Clock, Coffee, Flag, Moon, Play, Sparkles, Sun, Target, Timer, TriangleAlert, Zap } from "lucide-react";
 import type { ActivityEvent, SessionState, SessionView, UserAction } from "@nudgy/shared";
-import { Card, Segmented, Stat, duration, lengthLabel, minutes } from "./ui";
+import { Card, Segmented, Stat, Toggle, duration, lengthLabel, minutes } from "./ui";
+
+/** Goals that happen away from the PC. */
+const OFF_SCREEN = /\b(book|novel|reading|read|paper|notebook|handwrit|workout|exercise|gym|walk|run|jog|cook|clean|meditat|nap|sleep|practice|piano|guitar)\b/i;
+
+const clock = (ms: number) => `${Math.floor(ms / 60_000)}:${String(Math.floor((ms % 60_000) / 1000)).padStart(2, "0")}`;
 
 const LENGTHS = [25, 50, 90, 120, 180];
 
@@ -44,6 +49,9 @@ function flags(e: ActivityEvent): string[] {
 function StartForm({ view }: { view: SessionView }) {
   const [goal, setGoal] = useState("");
   const [length, setLength] = useState(120);
+  const [offline, setOffline] = useState<boolean | null>(null);
+  const awayGuess = OFF_SCREEN.test(goal);
+  const away = offline ?? awayGuess;
   const last = view.lastSession;
   return (
     <>
@@ -53,13 +61,19 @@ function StartForm({ view }: { view: SessionView }) {
           className="start"
           onSubmit={(e) => {
             e.preventDefault();
-            if (goal.trim()) void act({ type: "start_session", goal: { text: goal.trim(), minutes: length } });
+            if (goal.trim()) void act({ type: "start_session", goal: { text: goal.trim(), minutes: length, offline: away } });
           }}
         >
           <div className="input-icon">
             <Target size={18} />
             <input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="e.g. Thesis chapter 3" maxLength={80} autoFocus />
           </div>
+          <Toggle
+            checked={away}
+            onChange={setOffline}
+            label="Away from the screen"
+            hint="Reading a book, paper notes, a workout: any PC use counts as drift."
+          />
           <div className="start-row">
             <Segmented value={length} options={LENGTHS.map((m) => [m, lengthLabel(m)])} onChange={setLength} />
             <button type="submit" className="btn primary big" disabled={!goal.trim()}>
@@ -82,7 +96,7 @@ function StartForm({ view }: { view: SessionView }) {
   );
 }
 
-function Running({ view, now }: { view: SessionView; now: number }) {
+function Running({ view, now, current, thresholdMin }: { view: SessionView; now: number; current: ActivityEvent | null; thresholdMin: number }) {
   const session = view.session!;
   const s = session.stats;
   const elapsed = now - session.started;
@@ -113,9 +127,11 @@ function Running({ view, now }: { view: SessionView; now: number }) {
         <Stat icon={Flag} label={s.nudges === 1 ? "nudge" : "nudges"} value={s.nudges} tone="steel" />
       </div>
       {judged && (
-        <p className="judged">
-          Right now: <strong>{judged.label}</strong> · {judged.category.replace("_", " ")}
+        <p className={`judged ${judged.label}`}>
+          Right now: <strong>{current ? appName(current) : "nothing"}</strong> · {judged.label}
+          {judged.reason === "goal_match" ? " (matches your goal)" : judged.reason === "off_screen" ? " (you said away from the screen)" : ` · ${judged.category.replace("_", " ")}`}
           {judged.ambiguous ? " · not sure" : ""}
+          {" · "}drift {clock(s.drift)} of {session.goal.offline ? "1:00" : `${thresholdMin}:00`}
         </p>
       )}
       <div className="buttons">
@@ -145,7 +161,7 @@ function Running({ view, now }: { view: SessionView; now: number }) {
   );
 }
 
-export function FocusTab({ view }: { view: SessionView }) {
+export function FocusTab({ view, thresholdMin }: { view: SessionView; thresholdMin: number }) {
   const [now, setNow] = useState(Date.now());
   const [current, setCurrent] = useState<ActivityEvent | null>(null);
   const [recent, setRecent] = useState<ActivityEvent[]>([]);
@@ -163,7 +179,7 @@ export function FocusTab({ view }: { view: SessionView }) {
 
   return (
     <div className="page">
-      {view.session ? <Running view={view} now={now} /> : <StartForm view={view} />}
+      {view.session ? <Running view={view} now={now} current={current} thresholdMin={thresholdMin} /> : <StartForm view={view} />}
       <Card title="Right now" icon={Clock}>
         {current ? (
           <div className="now-row">

@@ -70,6 +70,13 @@ export function SettingsTab(props: {
           <span className="toggle-label">Size</span>
           <Segmented<CharacterSize> value={settings.characterSize} options={[["s", "Small"], ["m", "Medium"], ["l", "Large"]]} onChange={(characterSize) => update({ characterSize })} />
         </div>
+        <div className="field-row">
+          <span>
+            <span className="toggle-label">Nudge me after</span>
+            <span className="hint">Minutes of distraction (added up) before the panda speaks.</span>
+          </span>
+          <Segmented<number> value={settings.driftThresholdMin} options={[[1, "1 min"], [2, "2"], [3, "3"], [5, "5"], [10, "10"]]} onChange={(driftThresholdMin) => update({ driftThresholdMin })} />
+        </div>
         <span className="toggle-label">Personality</span>
         <ToneCards tone={settings.tone} onChange={(tone) => update({ tone })} />
       </Card>

@@ -589,7 +589,7 @@ export const settings: Settings[] = [
     "cloudLines": true,
     "cloudReminderFallback": false,
     "dateOrder": "dmy",
-    "driftThresholdMin": 5,
+    "driftThresholdMin": 2,
     "onboarded": false,
     "privateApps": [
       "1password.exe",

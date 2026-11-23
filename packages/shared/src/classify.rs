@@ -29,6 +29,8 @@ pub enum ClassificationReason {
     Private,
     /// Nothing matched; neutral until labelled.
     Unknown,
+    /// The goal is away from the screen, so using the PC at all is drift.
+    OffScreen,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]

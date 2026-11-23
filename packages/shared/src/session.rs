@@ -17,6 +17,10 @@ pub struct Goal {
     pub text: String,
     /// Planned length in minutes.
     pub minutes: u32,
+    /// Away from the screen ("Reading a book"): any PC use counts as drift.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[ts(as = "Option<bool>", optional)]
+    pub offline: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]

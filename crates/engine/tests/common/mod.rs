@@ -80,7 +80,12 @@ impl Sim {
     }
 
     pub fn start(&mut self, goal: &str, minutes: u32) {
-        self.act(UserAction::StartSession { goal: Goal { text: goal.into(), minutes } });
+        self.act(UserAction::StartSession { goal: Goal { text: goal.into(), minutes, offline: false } });
+    }
+
+    /// A goal away from the screen ("Reading a book").
+    pub fn start_offline(&mut self, goal: &str, minutes: u32) {
+        self.act(UserAction::StartSession { goal: Goal { text: goal.into(), minutes, offline: true } });
     }
 
     pub fn act(&mut self, action: UserAction) -> Vec<Trigger> {

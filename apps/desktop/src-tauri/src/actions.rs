@@ -70,7 +70,7 @@ pub fn apply(app: &AppHandle, action: UserAction) {
             let text: String = goal.text.trim().chars().take(MAX_GOAL_CHARS).collect();
             if !text.is_empty() {
                 let minutes = goal.minutes.clamp(MIN_SESSION_MIN, MAX_SESSION_MIN);
-                send(app, Msg::Action(UserAction::StartSession { goal: Goal { text, minutes } }));
+                send(app, Msg::Action(UserAction::StartSession { goal: Goal { text, minutes, offline: goal.offline } }));
             }
         }
         UserAction::SetTrackingPaused { paused } => {

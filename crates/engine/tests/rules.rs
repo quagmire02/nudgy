@@ -142,15 +142,47 @@ fn actually_working_teaches_an_override_for_that_site_and_goal() {
 }
 
 #[test]
-fn calls_fullscreen_and_presentations_are_silent() {
+fn calls_presentations_and_fullscreen_work_are_silent() {
     let mut sim = Sim::new();
     sim.start("Python project", 120);
-    sim.run(&web("youtube.com", "Cat videos").fullscreen(), 20 * 60);
+    sim.run(&code().fullscreen(), 10 * 60);
     sim.run(&app("zoom.exe", "Zoom Meeting").mic(), 20 * 60);
+    sim.run(&web("youtube.com", "Cat videos").mic(), 10 * 60);
     assert_eq!(nudges(&sim), 0);
     assert_eq!(sim.session().state, SessionState::Muted);
-    // The fullscreen time still counts in the stats.
-    assert!(sim.session().stats.distracting >= 19 * 60_000);
+    // The muted time still counts in the stats.
+    assert!(sim.session().stats.distracting >= 9 * 60_000);
+}
+
+#[test]
+fn a_fullscreen_game_in_a_session_is_drift() {
+    let mut sim = Sim::new();
+    sim.start("Thesis chapter 3", 120);
+    sim.run(&app("fortniteclient-win64-shipping.exe", "Fortnite").fullscreen(), 6 * 60);
+    assert_eq!(nudges(&sim), 1, "the panda speaks up over the game");
+    assert_ne!(sim.session().state, SessionState::Muted);
+}
+
+#[test]
+fn off_screen_goals_count_any_pc_use_and_nudge_after_a_minute() {
+    let mut sim = Sim::new();
+    sim.start_offline("Reading a book", 25);
+    // Reading: the PC sits untouched for 10 minutes. That's the goal.
+    // Even "work" apps count, and the nudge comes after about a minute and a half.
+    let said = sim.run(&code(), 2 * 60);
+    assert!(said.iter().any(|t| t.kind == K::DriftFirst), "nudged: {:?}", sim.kinds());
+    // Then the PC sits untouched while reading: no "still there?".
+    sim.run(&code().idle(), 15 * 60);
+    assert_eq!(sim.count(K::IdleCheck), 0, "no \"still there?\" while away from the screen");
+    assert_eq!(sim.engine.classification().unwrap().reason, nudgy_shared::ClassificationReason::OffScreen);
+}
+
+#[test]
+fn off_screen_goals_let_you_open_nudgy_to_end_the_session() {
+    let mut sim = Sim::new();
+    sim.start_offline("Reading a book", 25);
+    sim.run(&app("nudgy-desktop.exe", "Nudgy"), 3 * 60);
+    assert_eq!(nudges(&sim), 0);
 }
 
 #[test]

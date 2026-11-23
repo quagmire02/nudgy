@@ -380,7 +380,7 @@ mod session_tests {
     fn session(id: &str, started: UnixMs) -> Session {
         Session {
             id: id.into(),
-            goal: Goal { text: "Thesis".into(), minutes: 60 },
+            goal: Goal { text: "Thesis".into(), minutes: 60, offline: false },
             tone: Tone::Coach,
             state: SessionState::Focusing,
             mute_reason: None,

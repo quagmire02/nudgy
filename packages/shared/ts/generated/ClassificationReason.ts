@@ -3,4 +3,4 @@
 /**
  * Why the classifier chose a label, strongest first.
  */
-export type ClassificationReason = "override" | "goal_match" | "rule" | "idle_grace" | "private" | "unknown";
+export type ClassificationReason = "override" | "goal_match" | "rule" | "idle_grace" | "private" | "unknown" | "off_screen";

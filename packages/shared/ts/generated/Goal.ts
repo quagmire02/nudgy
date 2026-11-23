@@ -8,4 +8,8 @@ text: string,
 /**
  * Planned length in minutes.
  */
-minutes: number, };
+minutes: number, 
+/**
+ * Away from the screen ("Reading a book"): any PC use counts as drift.
+ */
+offline?: boolean, };

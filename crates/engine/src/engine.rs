@@ -19,7 +19,8 @@
 use std::collections::{HashMap, HashSet};
 
 use nudgy_shared::{
-    ActivityEvent, Category, CharacterState, Classification, DeadlineHint, Distraction, Goal, Label, MuteReason,
+    ActivityEvent, Category, CharacterState, Classification, ClassificationReason, DeadlineHint, Distraction, Foreground,
+    Goal, Label, MuteReason,
     Override, Presence, Session, SessionState, SessionStats, Tone, Trigger, TriggerContext, TriggerKind, UnixMs,
     UserAction, constants,
 };
@@ -37,6 +38,8 @@ pub const QUESTION_AFTER_MS: u32 = 2 * 60_000;
 pub const BREAK_OVERRUN_MS: u32 = 3 * 60_000;
 /// Away (locked, asleep) at least this long earns a "welcome back".
 pub const WELCOME_BACK_AFTER_MS: u32 = 5 * 60_000;
+/// Drift before a nudge when the goal is away from the screen.
+pub const OFFLINE_DRIFT_MS: u32 = 60_000;
 /// Escalations per drift episode; after that the panda waits for a return.
 pub const MAX_NUDGES_PER_EPISODE: u8 = 4;
 /// A tick gap longer than this means the PC slept.
@@ -250,11 +253,13 @@ impl Engine {
             let away = std::mem::take(&mut self.away_ms);
             self.came_back(away, now);
         }
+        // Fullscreen is quiet for a film on a break or a fullscreen editor, but
+        // a fullscreen game or video in a session is exactly the drift to catch.
         let context = if event.flags.mic_in_use {
             Some(MuteReason::Call)
         } else if event.flags.presenting {
             Some(MuteReason::Presenting)
-        } else if event.flags.fullscreen {
+        } else if event.flags.fullscreen && self.classify(&event).label != Label::Distracting {
             Some(MuteReason::Fullscreen)
         } else {
             None
@@ -312,7 +317,8 @@ impl Engine {
         // Idle: focused for a while if you were focused (reading, thinking).
         let label = if event.presence == Presence::Idle {
             run.idle_run += dt;
-            if run.last_active == Label::Focused && run.idle_run < constants::IDLE_FOCUSED_GRACE_MS {
+            // Off-screen goals: an untouched PC is the whole point.
+            if run.session.goal.offline || (run.last_active == Label::Focused && run.idle_run < constants::IDLE_FOCUSED_GRACE_MS) {
                 Some(Label::Focused)
             } else {
                 if run.last_active == Label::Focused && !run.idle_asked && self.can_speak(now) {
@@ -421,13 +427,24 @@ impl Engine {
         {
             return class.clone();
         }
-        let class = self.classifier.classify(&event.foreground, goal.as_deref(), &self.overrides);
+        let mut class = self.classifier.classify(&event.foreground, goal.as_deref(), &self.overrides);
+        // "Reading a book": any use of the PC is drift, except Nudgy itself (to
+        // end the session) and anything the user said is work.
+        if self.run.as_ref().is_some_and(|r| r.session.goal.offline)
+            && class.reason != ClassificationReason::Override
+            && !matches!(&event.foreground, Foreground::None)
+            && !is_nudgy(&event.foreground)
+        {
+            class = Classification { label: Label::Distracting, reason: ClassificationReason::OffScreen, ambiguous: false, confidence: 1.0, ..class };
+        }
         self.classification = Some((event.start, title, class.clone()));
         class
     }
 
     fn maybe_nudge(&mut self, event: &ActivityEvent, class: &Classification, now: UnixMs, out: &mut Vec<Output>) {
-        let threshold = self.settings.drift_threshold_ms;
+        // Off the screen means off the screen: a minute of PC use is enough.
+        let offline = self.run.as_ref().is_some_and(|r| r.session.goal.offline);
+        let threshold = if offline { self.settings.drift_threshold_ms.min(OFFLINE_DRIFT_MS) } else { self.settings.drift_threshold_ms };
         let can_speak = self.can_speak(now);
         let run = self.run.as_mut().unwrap();
 
@@ -786,6 +803,11 @@ impl Engine {
         }));
         id
     }
+}
+
+/// Nudgy's own windows: opening them to end a session isn't drift.
+fn is_nudgy(foreground: &Foreground) -> bool {
+    matches!(foreground, Foreground::App { app_id, .. } if app_id.starts_with("nudgy"))
 }
 
 fn empty_session(goal: &Goal, tone: Tone, now: UnixMs) -> Session {

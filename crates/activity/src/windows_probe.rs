@@ -12,7 +12,7 @@ use windows::Win32::System::StationsAndDesktops::{
 use windows::Win32::System::SystemInformation::{GetTickCount, GetTickCount64};
 use windows::Win32::UI::Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO};
 use windows::Win32::UI::Shell::{
-    QUNS_BUSY, QUNS_NOT_PRESENT, QUNS_PRESENTATION_MODE, QUNS_RUNNING_D3D_FULL_SCREEN, SHQueryUserNotificationState,
+    QUNS_NOT_PRESENT, QUNS_PRESENTATION_MODE, QUNS_RUNNING_D3D_FULL_SCREEN, SHQueryUserNotificationState,
 };
 use windows::Win32::UI::WindowsAndMessaging::{GetClassNameW, GetForegroundWindow, GetWindowRect, IsZoomed};
 use winreg::RegKey;
@@ -125,7 +125,11 @@ fn input_desktop_unavailable() -> bool {
 
 fn notification_state() -> NotificationState {
     match unsafe { SHQueryUserNotificationState() } {
-        Ok(QUNS_BUSY | QUNS_RUNNING_D3D_FULL_SCREEN) => NotificationState::Fullscreen,
+        // Not QUNS_BUSY: it means "some fullscreen app exists", and stays on
+        // while a game sits in the background or another window is maximised
+        // edge to edge, which muted every session. Borderless fullscreen is
+        // caught per window instead (`covers_monitor` on the foreground).
+        Ok(QUNS_RUNNING_D3D_FULL_SCREEN) => NotificationState::Fullscreen,
         Ok(QUNS_PRESENTATION_MODE) => NotificationState::Presentation,
         Ok(QUNS_NOT_PRESENT) => NotificationState::NotPresent,
         _ => NotificationState::Normal,

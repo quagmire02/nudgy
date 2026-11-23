@@ -21,7 +21,7 @@ function sampleMoment(animation: CharacterState, text: string, replies: QuickRep
       replies,
       aiEligible: false,
     },
-    line: { triggerId: `preview-${animation}`, text, source: "canned", speak: true },
+    line: { triggerId: `preview-${animation}`, text, source: "canned" },
   };
 }
 
@@ -30,7 +30,7 @@ function Preview() {
   const [state, setState] = useState<CharacterState>("idle_dozing");
   const [size, setSize] = useState<CharacterSize>("m");
   const [bubble, setBubble] = useState(false);
-  const overlay: OverlayState = { visible: state !== "hidden", base: state, size, quietMode: false };
+  const overlay: OverlayState = { visible: state !== "hidden", base: state, size };
   const moment = bubble
     ? sampleMoment(state, "I was half asleep and even I noticed. Six minutes of Instagram.", [
         "back_to_work", "take_break", "actually_working",

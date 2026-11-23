@@ -14,8 +14,10 @@
       {
         "label": "main",
         "title": "Nudgy",
-        "width": 800,
-        "height": 640,
+        "width": 880,
+        "height": 720,
+        "minWidth": 600,
+        "minHeight": 520,
         "visible": false
       }
     ],

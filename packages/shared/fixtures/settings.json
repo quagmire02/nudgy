@@ -1,6 +1,6 @@
 [
   {
-    "onboarded": false, "tone": "coach", "voice": "default", "quietMode": false, "characterSize": "m",
+    "onboarded": false, "tone": "coach", "characterSize": "m",
     "driftThresholdMin": 5, "cloudLines": true, "shareTitlesWithCloud": false, "cloudReminderFallback": false,
     "dateOrder": "dmy", "swearing": false, "trackingPaused": false, "autostart": true,
     "privateApps": ["1password.exe", "bitwarden.exe", "keepass.exe", "keepassxc.exe", "lastpass.exe", "dashlane.exe"]

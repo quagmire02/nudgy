@@ -11,16 +11,13 @@ use crate::{Core, actions};
 /// Check items whose state changes from elsewhere (hotkeys, the main window).
 pub struct TrayItems {
     pub show: CheckMenuItem<Wry>,
-    pub quiet: CheckMenuItem<Wry>,
     pub pause: CheckMenuItem<Wry>,
 }
 
 pub fn build(app: &AppHandle) -> tauri::Result<TrayItems> {
-    let core = app.state::<Core>();
-    let (quiet_on, hidden) = (core.settings.lock().unwrap().quiet_mode, core.ui.lock().unwrap().panda_hidden);
+    let hidden = app.state::<Core>().ui.lock().unwrap().panda_hidden;
 
     let show = CheckMenuItem::with_id(app, "show", "Show the panda", true, !hidden, None::<&str>)?;
-    let quiet = CheckMenuItem::with_id(app, "quiet", "Quiet mode (bubble only)\tCtrl+Alt+Q", true, quiet_on, None::<&str>)?;
     let take_break = MenuItem::with_id(app, "break", "Take a 5-minute break", true, None::<&str>)?;
     let end_session = MenuItem::with_id(app, "end", "End the session", true, None::<&str>)?;
     let snooze15 = MenuItem::with_id(app, "snooze15", "Snooze 15 minutes", true, None::<&str>)?;
@@ -36,7 +33,6 @@ pub fn build(app: &AppHandle) -> tauri::Result<TrayItems> {
             &end_session,
             &PredefinedMenuItem::separator(app)?,
             &show,
-            &quiet,
             &snooze15,
             &snooze60,
             &pause,
@@ -59,7 +55,7 @@ pub fn build(app: &AppHandle) -> tauri::Result<TrayItems> {
         tray = tray.icon(icon.clone());
     }
     tray.build(app)?;
-    Ok(TrayItems { show, quiet, pause })
+    Ok(TrayItems { show, pause })
 }
 
 fn on_menu(app: &AppHandle, id: &str) {
@@ -70,7 +66,6 @@ fn on_menu(app: &AppHandle, id: &str) {
             let hidden = core.ui.lock().unwrap().panda_hidden;
             actions::set_panda_hidden(app, !hidden);
         }
-        "quiet" => actions::toggle_quiet(app),
         "break" => actions::apply(app, UserAction::TakeBreak { minutes: constants::DEFAULT_BREAK_MIN }),
         "end" => actions::apply(app, UserAction::EndSession),
         "snooze15" => actions::apply(app, UserAction::Snooze { minutes: 15 }),

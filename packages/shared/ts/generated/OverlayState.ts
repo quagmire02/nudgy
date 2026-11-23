@@ -15,8 +15,4 @@ visible: boolean,
 /**
  * The resting animation between moments: `idle_dozing`, `on_break` or `snoozed`.
  */
-base: CharacterState, size: CharacterSize, 
-/**
- * Bubble only, no voice.
- */
-quietMode: boolean, };
+base: CharacterState, size: CharacterSize, };

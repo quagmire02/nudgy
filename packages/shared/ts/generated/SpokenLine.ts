@@ -2,10 +2,6 @@
 import type { LineSource } from "./LineSource";
 
 /**
- * A line ready to speak and show: what the lines engine gives the overlay.
+ * A line ready to show in the panda's bubble: what the lines engine gives the overlay.
  */
-export type SpokenLine = { triggerId: string, text: string, source: LineSource, 
-/**
- * False in Quiet mode: bubble only.
- */
-speak: boolean, };
+export type SpokenLine = { triggerId: string, text: string, source: LineSource, };

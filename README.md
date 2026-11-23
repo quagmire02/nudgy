@@ -14,7 +14,6 @@ A small armored panda on your Windows desktop that notices when you drift from y
 | `apps/proxy` | Cloudflare Worker for AI lines | 5 |
 | `crates/engine` | Classifier and session engine: what counts as work, when the panda speaks | 3 ✅ |
 | `crates/lines` | 1,386 canned lines in three tones, slot filling, the content filter | 4 ✅ |
-| `crates/voice` | Speech with the Windows built-in voices | 4 ✅ |
 | `data/` | Category lists, the line library (`data/lines/*.json`); `data/models/` is downloaded, not committed | 3, 4 ✅ |
 | `character/` | Panda concept art and animation states | — |
 | `third_party/libtomcrypt` | libtomcrypt headers for the SQLCipher build | — |
@@ -68,8 +67,8 @@ The panda lives in its own window: transparent, always on top, never activated (
 
 - **Moves:** drag it anywhere; the position is remembered.
 - **Hides:** during calls (microphone in use), fullscreen, presentations, lock and sleep. It ducks out, then the window hides, so it never shows up in a screen share.
-- **Tray menu:** open Nudgy, show/hide the panda, Quiet mode, snooze 15 min / 1 hour, pause tracking, quit. Closing the main window keeps Nudgy running in the tray.
-- **Hotkeys:** `Ctrl+Alt+N` opens Nudgy, `Ctrl+Alt+Q` toggles Quiet mode (bubble only, no voice).
+- **Tray menu:** open Nudgy, show/hide the panda, snooze 15 min / 1 hour, pause tracking, quit. Closing the main window keeps Nudgy running in the tray.
+- **Hotkeys:** `Ctrl+Alt+N` opens Nudgy, `Ctrl+Alt+D` makes a reminder from selected text.
 - **Try it:** the main window's *Test the panda* buttons play every kind of moment. While `pnpm dev` runs, http://localhost:1420/overlay.html previews all animation states in a browser.
 
 The art is `character/panda.svg` with CSS animations (`apps/desktop/src/overlay/panda.css`), a placeholder for the commissioned Rive file; state names match `CharacterState`.
@@ -83,12 +82,11 @@ The art is `character/panda.svg` with CSS animations (`apps/desktop/src/overlay/
 - **Learning.** "I'm actually working" makes that site work for that goal (stored); on video and news sites it covers that title only, so one tutorial doesn't make all of YouTube work.
 - **Acceptance.** `crates/engine/tests/timelines.rs` replays five scripted hour-plus student sessions (a CS assignment, thesis reading, DSA lectures, a marketer whose job is Instagram, a lab report with a call and a Netflix break): 0.20 false nudges per hour of work, target under 1, and every real distraction gets nudged. These are scripted from typical sessions; recorded volunteer timelines can be added in the same format.
 
-## Lines and voice
+## Lines
 
 - **Library.** `data/lines/{gentle,coach,savage}.json`: 1,386 lines covering all 27 triggers in each tone, in the panda's voice (lazy by nature, on duty anyway; drift is "we" slipping). Slots: `{goal}`, `{app}` (read as a brand: "Instagram", not "instagram.com"), `{minutes}`, `{streak}`, `{deadline}`, `{when}`. The picker only uses lines whose slots are filled and doesn't repeat recent ones.
 - **Filter.** Every line, canned or AI, passes `crates/lines/src/filter.rs`: at most 140 characters, plain text, nothing about appearance, body, intelligence, identity or mental health, no swearing unless enabled. Tests run every library line through it with the longest possible slot values.
-- **Voice.** The Windows built-in voices (WinRT `SpeechSynthesizer`) at 0.9× speed: offline, free, already installed. Pick one in the main window. Acceptance: all 27 triggers × 3 tones are ready to play in under 1 second (53 ms average, 104 ms worst on the dev machine). The spec's Kokoro/Piper voices need the GPL espeak-ng phonemiser and a 100+ MB model, so they're left for v1.
-- **Quiet mode** shows the bubble without speaking; nothing is spoken while the panda is hidden. The talking animation lasts exactly as long as the audio.
+- **Silent panda.** Lines show in the speech bubble only; there is no audio. The panda mouths each line for about as long as it takes to read.
 
 ## Reports and reminders
 
@@ -99,7 +97,7 @@ The art is `character/panda.svg` with CSS animations (`apps/desktop/src/overlay/
 
 `pnpm --filter @nudgy/desktop tauri build` produces `target/release/bundle/nsis/Nudgy_0.1.0_x64-setup.exe` (about 86 MB, mostly the embedding model). It installs for the current user, no admin needed, and bundles the embedding model and the browser extension (the `extension` folder inside the install folder, for "Load unpacked"). Run `pnpm fetch-model` and `pnpm build:extension` first.
 
-- First launch shows onboarding (tone, voice, extension, start with Windows). After that Nudgy starts in the tray; Ctrl+Alt+N opens the window.
+- First launch shows onboarding (personality, extension, start with Windows). After that Nudgy starts in the tray; Ctrl+Alt+N opens the window.
 - Start with Windows is on by default and only registers from an installed build.
 - Release builds run under a strict Content Security Policy; dev builds don't.
 - **Not done:** code signing (SmartScreen warns until the installer is signed with your certificate) and auto-update (needs your updater signing key and somewhere to host releases). Both are config additions in `tauri.conf.json`.

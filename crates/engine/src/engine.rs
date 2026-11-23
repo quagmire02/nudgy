@@ -652,7 +652,7 @@ impl Engine {
                     self.say(TriggerKind::ToneChanged, now, out);
                 }
             }
-            UserAction::Dismiss { .. } | UserAction::SetQuietMode { .. } | UserAction::SetTrackingPaused { .. } => {}
+            UserAction::Dismiss { .. } | UserAction::SetTrackingPaused { .. } => {}
         }
     }
 

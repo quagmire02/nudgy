@@ -109,13 +109,11 @@ pub struct RegisterResponse {
     pub expires_at: UnixMs,
 }
 
-/// A line ready to speak and show: what the lines engine gives the overlay.
+/// A line ready to show in the panda's bubble: what the lines engine gives the overlay.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct SpokenLine {
     pub trigger_id: String,
     pub text: String,
     pub source: LineSource,
-    /// False in Quiet mode: bubble only.
-    pub speak: bool,
 }

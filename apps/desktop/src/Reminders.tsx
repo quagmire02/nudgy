@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import * as chrono from "chrono-node";
+import { CalendarDays, CalendarPlus, Check, ClipboardPaste, MapPin, ScrollText, X } from "lucide-react";
 import type { Reminder, ReminderDraft } from "@nudgy/shared";
+import { Card, Kbd } from "./ui";
 
 interface Form {
   title: string;
@@ -43,19 +45,31 @@ function remindTimes(at: Date, allDay: boolean): number[] {
   return [evening.getTime(), sameDay].filter((t) => t > Date.now());
 }
 
-export function Reminders() {
+/** Reminder text from Ctrl+Alt+D, kept here so it survives switching tabs. */
+let pendingText: string | null = null;
+listen<string>("reminder://text", (e) => {
+  pendingText = e.payload;
+  window.dispatchEvent(new Event("nudgy:reminder-text"));
+});
+
+export function Reminders({ toast }: { toast: (text: string) => void }) {
   const [form, setForm] = useState<Form | null>(null);
   const [list, setList] = useState<Reminder[]>([]);
   const [note, setNote] = useState<string | null>(null);
+  const [paste, setPaste] = useState("");
 
   const refresh = () => void invoke<Reminder[]>("list_reminders").then(setList);
   useEffect(() => {
     refresh();
-    const unlisten = listen<string>("reminder://text", (e) => {
-      setNote(e.payload ? null : "Couldn't read the selection. Copy the text and paste it here.");
-      setForm(parse(e.payload));
-    });
-    return () => void unlisten.then((u) => u());
+    const take = () => {
+      if (pendingText === null) return;
+      setNote(pendingText ? null : "Couldn't read the selection. Copy the text and paste it here.");
+      setForm(parse(pendingText));
+      pendingText = null;
+    };
+    take();
+    window.addEventListener("nudgy:reminder-text", take);
+    return () => window.removeEventListener("nudgy:reminder-text", take);
   }, []);
 
   const save = async () => {
@@ -72,46 +86,109 @@ export function Reminders() {
     };
     await invoke("save_reminder", { draft });
     setForm(null);
+    setPaste("");
+    toast("Saved. The panda wrote it on its scroll.");
     refresh();
   };
 
   return (
-    <section>
-      <h2>Reminders</h2>
-      <p className="muted">Select text with a date anywhere and press Ctrl+Alt+D, or paste it here.</p>
-      {!form && (
-        <input
-          className="paste"
-          placeholder="e.g. Quiz on Sunday 26 Oct, 10:00, Room 7B"
-          onKeyDown={(e) => e.key === "Enter" && setForm(parse(e.currentTarget.value))}
-        />
-      )}
-      {note && <p className="error">{note}</p>}
-      {form && (
-        <div className="reminder-form">
-          <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="What" />
-          <input type="datetime-local" value={form.when} onChange={(e) => setForm({ ...form, when: e.target.value, allDay: false })} />
-          <input value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })} placeholder="Where (optional)" />
-          {form.when && new Date(form.when).getTime() < Date.now() && <p className="error">That date has passed.</p>}
-          <div className="buttons">
-            <button onClick={save} disabled={!form.when}>
-              Save
-            </button>
-            <button onClick={() => setForm(null)}>Cancel</button>
+    <div className="page">
+      <Card title="New reminder" icon={ScrollText}>
+        {!form ? (
+          <>
+            <div className="input-icon">
+              <ClipboardPaste size={18} />
+              <input
+                value={paste}
+                onChange={(e) => setPaste(e.target.value)}
+                placeholder="Paste anything with a date, e.g. Quiz on 26 Oct, 10:00, Room 7B"
+                onKeyDown={(e) => e.key === "Enter" && paste.trim() && setForm(parse(paste))}
+              />
+              <button className="btn primary" disabled={!paste.trim()} onClick={() => setForm(parse(paste))}>
+                Read it
+              </button>
+            </div>
+            <p className="hint">
+              Or select text in any app and press <Kbd>Ctrl+Alt+D</Kbd>
+            </p>
+          </>
+        ) : (
+          <div className="reminder-form">
+            <label>
+              <span>What</span>
+              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="What" />
+            </label>
+            <label>
+              <span>When</span>
+              <input type="datetime-local" value={form.when} onChange={(e) => setForm({ ...form, when: e.target.value, allDay: false })} />
+            </label>
+            <label>
+              <span>Where</span>
+              <input value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })} placeholder="Optional" />
+            </label>
+            {!form.when && <p className="warn">No date found. Pick one above.</p>}
+            {form.when && new Date(form.when).getTime() < Date.now() && <p className="warn">That date has passed.</p>}
+            <div className="buttons">
+              <button className="btn primary" onClick={save} disabled={!form.when}>
+                <Check size={15} /> Save reminder
+              </button>
+              <button className="btn ghost" onClick={() => setForm(null)}>
+                Cancel
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-      <ul>
-        {list.map((r) => (
-          <li key={r.id}>
-            {r.title} <span className="muted">{new Date(r.eventAt).toLocaleString()} {r.place}</span>{" "}
-            <button className="link" onClick={() => invoke("cancel_reminder", { id: r.id }).then(refresh)}>
-              remove
+        )}
+        {note && <p className="warn">{note}</p>}
+      </Card>
+
+      <Card
+        title="Coming up"
+        icon={CalendarDays}
+        action={
+          list.length > 0 && (
+            <button
+              className="btn soft small"
+              onClick={async () => toast(`Exported to ${await invoke<string>("export_ics")}`)}
+            >
+              <CalendarPlus size={14} /> Export .ics
             </button>
-          </li>
-        ))}
-      </ul>
-      {list.length > 0 && <button onClick={() => invoke("export_ics")}>Export to calendar (.ics)</button>}
-    </section>
+          )
+        }
+      >
+        {list.length === 0 ? (
+          <p className="empty">The panda's scroll is empty. Nothing to remember yet.</p>
+        ) : (
+          <ul className="reminder-list">
+            {list.map((r) => {
+              const d = new Date(r.eventAt);
+              return (
+                <li key={r.id}>
+                  <span className="cal">
+                    <span className="cal-month">{d.toLocaleString(undefined, { month: "short" })}</span>
+                    <span className="cal-day">{d.getDate()}</span>
+                  </span>
+                  <span className="reminder-text">
+                    <strong>{r.title}</strong>
+                    <span className="muted">
+                      {d.toLocaleString(undefined, { weekday: "short" })}
+                      {r.allDay ? "" : `, ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`}
+                      {r.place && (
+                        <>
+                          {" · "}
+                          <MapPin size={12} /> {r.place}
+                        </>
+                      )}
+                    </span>
+                  </span>
+                  <button className="icon-btn" title="Remove" onClick={() => invoke("cancel_reminder", { id: r.id }).then(refresh)}>
+                    <X size={16} />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
+    </div>
   );
 }

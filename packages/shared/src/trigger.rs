@@ -149,6 +149,5 @@ pub enum UserAction {
     Answer { trigger_id: String, yes: bool },
     Dismiss { trigger_id: String },
     SetTone { tone: Tone },
-    SetQuietMode { on: bool },
     SetTrackingPaused { paused: bool },
 }

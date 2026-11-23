@@ -18,7 +18,6 @@ nudgy-activity = { path = "../../../crates/activity" }
 nudgy-cloud = { path = "../../../crates/cloud" }
 nudgy-engine = { path = "../../../crates/engine", features = ["embeddings"] }
 nudgy-lines = { path = "../../../crates/lines" }
-nudgy-voice = { path = "../../../crates/voice" }
 nudgy-shared = { path = "../../../packages/shared" }
 tauri = { version = "2", features = ["tray-icon"] }
 serde.workspace = true

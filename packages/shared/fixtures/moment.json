@@ -11,6 +11,6 @@
       "replies": ["back_to_work", "take_break", "actually_working"],
       "aiEligible": true
     },
-    "line": { "triggerId": "t-0001", "text": "I was half asleep and even I noticed. Six minutes of Instagram.", "source": "canned", "speak": true }
+    "line": { "triggerId": "t-0001", "text": "I was half asleep and even I noticed. Six minutes of Instagram.", "source": "canned" }
   }
 ]

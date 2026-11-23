@@ -1,5 +1,5 @@
 //! Things the user can do from the tray, hotkeys, the overlay and the main
-//! window. App-level ones (quiet mode, hiding the panda, pausing tracking)
+//! window. App-level ones (hiding the panda, pausing tracking)
 //! are handled here; everything about the session goes to the engine.
 
 use nudgy_shared::UserAction;
@@ -14,26 +14,6 @@ pub fn open_main(app: &AppHandle) {
         let _ = window.unminimize();
         let _ = window.set_focus();
     }
-}
-
-pub fn set_quiet(app: &AppHandle, on: bool) {
-    let core = app.state::<Core>();
-    let settings = {
-        let mut settings = core.settings.lock().unwrap();
-        settings.quiet_mode = on;
-        core.store.save("settings.json", &*settings);
-        settings.clone()
-    };
-    if let Some(tray) = core.tray.lock().unwrap().as_ref() {
-        let _ = tray.quiet.set_checked(on);
-    }
-    send(app, Msg::Settings(settings));
-    overlay::push_state(app);
-}
-
-pub fn toggle_quiet(app: &AppHandle) {
-    let on = !app.state::<Core>().settings.lock().unwrap().quiet_mode;
-    set_quiet(app, on);
 }
 
 pub fn set_panda_hidden(app: &AppHandle, hidden: bool) {
@@ -72,7 +52,6 @@ pub fn send(app: &AppHandle, msg: Msg) {
 
 pub fn apply(app: &AppHandle, action: UserAction) {
     match action {
-        UserAction::SetQuietMode { on } => set_quiet(app, on),
         UserAction::SetTrackingPaused { paused } => {
             set_tracking_paused(app, paused);
         }

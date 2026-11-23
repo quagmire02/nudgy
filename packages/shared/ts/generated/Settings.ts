@@ -3,15 +3,7 @@ import type { CharacterSize } from "./CharacterSize";
 import type { DateOrder } from "./DateOrder";
 import type { Tone } from "./Tone";
 
-export type Settings = { onboarded: boolean, tone: Tone, 
-/**
- * A Windows voice id from `list_voices`, or `default` for the system voice.
- */
-voice: string, 
-/**
- * Bubble only, no voice.
- */
-quietMode: boolean, characterSize: CharacterSize, driftThresholdMin: number, 
+export type Settings = { onboarded: boolean, tone: Tone, characterSize: CharacterSize, driftThresholdMin: number, 
 /**
  * Personalised AI lines (quota-limited). Off = canned lines only.
  */

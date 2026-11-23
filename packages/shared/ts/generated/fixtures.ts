@@ -21,8 +21,6 @@ import type { OverlayState } from "./OverlayState";
 import type { Moment } from "./Moment";
 import type { HitRect } from "./HitRect";
 import type { SessionView } from "./SessionView";
-import type { Speaking } from "./Speaking";
-import type { VoiceOption } from "./VoiceOption";
 import type { CloudStatus } from "./CloudStatus";
 import type { WeeklyReport } from "./WeeklyReport";
 
@@ -430,10 +428,6 @@ export const userActions: UserAction[] = [
     "type": "set_tone"
   },
   {
-    "on": true,
-    "type": "set_quiet_mode"
-  },
-  {
     "paused": false,
     "type": "set_tracking_paused"
   }
@@ -528,13 +522,11 @@ export const registerResponses: RegisterResponse[] = [
 export const spokenLines: SpokenLine[] = [
   {
     "source": "canned",
-    "speak": true,
     "text": "I was half asleep and even I noticed. Six minutes of Instagram.",
     "triggerId": "t-0001"
   },
   {
     "source": "ai",
-    "speak": false,
     "text": "45 minutes straight. Too tired to clap, but I'm proud of you.",
     "triggerId": "t-0002"
   }
@@ -607,25 +599,21 @@ export const settings: Settings[] = [
       "lastpass.exe",
       "dashlane.exe"
     ],
-    "quietMode": false,
     "shareTitlesWithCloud": false,
     "swearing": false,
     "tone": "coach",
-    "trackingPaused": false,
-    "voice": "default"
+    "trackingPaused": false
   }
 ];
 
 export const overlayStates: OverlayState[] = [
   {
     "base": "idle_dozing",
-    "quietMode": false,
     "size": "m",
     "visible": true
   },
   {
     "base": "snoozed",
-    "quietMode": true,
     "size": "s",
     "visible": false
   }
@@ -635,7 +623,6 @@ export const moments: Moment[] = [
   {
     "line": {
       "source": "canned",
-      "speak": true,
       "text": "I was half asleep and even I noticed. Six minutes of Instagram.",
       "triggerId": "t-0001"
     },
@@ -709,21 +696,6 @@ export const sessionViews: SessionView[] = [
       },
       "tone": "coach"
     }
-  }
-];
-
-export const speakings: Speaking[] = [
-  {
-    "durationMs": 3120,
-    "triggerId": "t-0001"
-  }
-];
-
-export const voiceOptions: VoiceOption[] = [
-  {
-    "id": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Speech_OneCore\\Voices\\Tokens\\MSTTS_V110_enUS_ZiraM",
-    "language": "en-US",
-    "name": "Microsoft Zira"
   }
 ];
 

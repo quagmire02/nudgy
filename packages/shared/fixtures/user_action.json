@@ -10,6 +10,5 @@
   { "type": "answer", "triggerId": "t-0007", "yes": true },
   { "type": "dismiss", "triggerId": "t-0004" },
   { "type": "set_tone", "tone": "savage" },
-  { "type": "set_quiet_mode", "on": true },
   { "type": "set_tracking_paused", "paused": false }
 ]

@@ -41,7 +41,7 @@ export function bubbleMillis(text: string, replies: number): number {
   return replies > 0 ? Math.max(reading, 20_000) : reading;
 }
 
-/** Rough speaking time, for the browser preview (the app uses real audio lengths). */
+/** How long the silent panda mouths a line: roughly its reading time. */
 export function speakingMillis(text: string): number {
   return Math.max(1_200, text.length * 62);
 }

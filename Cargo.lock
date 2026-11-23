@@ -2871,7 +2871,6 @@ dependencies = [
  "nudgy-engine",
  "nudgy-lines",
  "nudgy-shared",
- "nudgy-voice",
  "serde",
  "serde_json",
  "tauri",
@@ -2918,17 +2917,6 @@ version = "0.1.0"
 dependencies = [
  "cc",
  "sqlcipher-src",
-]
-
-[[package]]
-name = "nudgy-voice"
-version = "0.1.0"
-dependencies = [
- "log",
- "nudgy-lines",
- "nudgy-shared",
- "serde_json",
- "windows 0.62.2",
 ]
 
 [[package]]

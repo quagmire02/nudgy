@@ -12,9 +12,11 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@fontsource-variable/nunito": "^5.3.0",
     "@nudgy/shared": "workspace:*",
     "@tauri-apps/api": "^2",
     "chrono-node": "^2.10.3",
+    "lucide-react": "^1.78.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

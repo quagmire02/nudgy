@@ -3,7 +3,7 @@ import type { SpokenLine } from "./SpokenLine";
 import type { Trigger } from "./Trigger";
 
 /**
- * One thing the panda reacts to: an animation, a bubble and maybe speech
+ * One thing the panda reacts to: an animation and a speech bubble
  * (event `overlay://moment`).
  */
 export type Moment = { trigger: Trigger, line: SpokenLine, };

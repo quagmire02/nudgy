@@ -1,40 +1,30 @@
 //! Turns a trigger into what the panda says: a personalised AI line when one
-//! arrives in time, otherwise a canned line; shows the bubble and speaks it
-//! (unless Quiet mode or the panda is hidden). The talking animation follows
-//! the real audio length.
+//! arrives in time, otherwise a canned line, shown in the panda's bubble.
+//! The panda is silent: no audio, just the bubble and its animation.
 
 use std::sync::Mutex;
 use std::sync::mpsc;
 use std::time::Duration;
 
 use nudgy_lines::{Library, Picker};
-use nudgy_shared::{CloudStatus, LineSource, Moment, Speaking, SpokenLine, Trigger, VoiceOption};
-use nudgy_voice::Speaker;
-use tauri::{AppHandle, Emitter, Manager};
+use nudgy_shared::{CloudStatus, LineSource, Moment, SpokenLine, Trigger};
+use tauri::{AppHandle, Manager};
 
 use crate::{Core, cloud, lines, overlay};
 
 /// How long the panda waits for an AI line before using a canned one, so a
-/// line is still spoken within a second of the trigger.
+/// line still shows within a second of the trigger.
 const AI_WAIT: Duration = Duration::from_millis(700);
 
 pub struct Speech {
     picker: Mutex<Picker>,
-    speaker: Speaker,
 }
 
 impl Speech {
     pub fn new() -> Self {
-        let speaker = Speaker::start();
-        // Load the voice now so the first real line isn't the slow one.
-        drop(speaker.synthesize("Ready.", "default"));
         let seed = nudgy_activity::now_ms() as u64;
-        Speech { picker: Mutex::new(Picker::new(Library::load(), seed)), speaker }
+        Speech { picker: Mutex::new(Picker::new(Library::load(), seed)) }
     }
-}
-
-pub fn voices() -> Vec<VoiceOption> {
-    nudgy_voice::voices().into_iter().map(|v| VoiceOption { id: v.id, name: v.name, language: v.language }).collect()
 }
 
 pub fn cloud_status(core: &Core) -> CloudStatus {
@@ -71,14 +61,11 @@ fn ai_line(app: &AppHandle, trigger: &Trigger, title: Option<String>) -> Option<
     }
 }
 
-/// Shows and speaks the line for `trigger`. `title` is the window in front,
-/// sent to the cloud only with the user's consent.
+/// Shows the line for `trigger` in the panda's bubble. `title` is the window
+/// in front, sent to the cloud only with the user's consent.
 pub fn present(app: &AppHandle, trigger: Trigger, title: Option<String>) {
     let core = app.state::<Core>();
-    let (quiet, swearing, voice) = {
-        let s = core.settings.lock().unwrap();
-        (s.quiet_mode, s.swearing, s.voice.clone())
-    };
+    let swearing = core.settings.lock().unwrap().swearing;
     let (text, source) = match ai_line(app, &trigger, title) {
         Some(text) => (text, LineSource::Ai),
         None => {
@@ -86,22 +73,6 @@ pub fn present(app: &AppHandle, trigger: Trigger, title: Option<String>) {
             (canned.unwrap_or_else(|| lines::placeholder(&trigger)), LineSource::Canned)
         }
     };
-    let visible = overlay::current_state(&core).visible;
-    let speak = !quiet && visible;
     let trigger_id = trigger.id.clone();
-    overlay::moment(app, Moment { trigger, line: SpokenLine { trigger_id: trigger_id.clone(), text: text.clone(), source, speak } });
-    if !speak {
-        return;
-    }
-    let reply = core.speech.speaker.speak(&text, &voice);
-    let app = app.clone();
-    std::thread::spawn(move || {
-        if let Ok(Ok(spoken)) = reply.recv() {
-            let duration_ms = spoken.duration.as_millis().min(u32::MAX as u128) as u32;
-            let _ = app.emit_to(overlay::LABEL, "overlay://speaking", Speaking { trigger_id, duration_ms });
-            if spoken.latency.as_millis() > 1_000 {
-                log::warn!("a line took {:?} to start speaking", spoken.latency);
-            }
-        }
-    });
+    overlay::moment(app, Moment { trigger, line: SpokenLine { trigger_id, text, source } });
 }

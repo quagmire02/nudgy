@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { CharacterState, HitRect, Moment, OverlayState, QuickReply, Speaking } from "@nudgy/shared";
+import type { CharacterState, HitRect, Moment, OverlayState, QuickReply } from "@nudgy/shared";
 import { Panda } from "./Panda";
 import { REPLY_LABELS, bubbleMillis, replyAction, speakingMillis } from "./replies";
 import { inTauri, invoke, listen, startDragging } from "./tauri";
@@ -7,7 +7,7 @@ import { inTauri, invoke, listen, startDragging } from "./tauri";
 const PANDA_PX = { s: 72, m: 96, l: 128 } as const;
 const DRAG_THRESHOLD_PX = 4;
 
-const INITIAL: OverlayState = { visible: true, base: "idle_dozing", size: "m", quietMode: false };
+const INITIAL: OverlayState = { visible: true, base: "idle_dozing", size: "m" };
 
 export function Overlay({ preview }: { preview?: { state: OverlayState; moment: Moment | null } }) {
   const [state, setState] = useState<OverlayState>(preview?.state ?? INITIAL);
@@ -26,7 +26,7 @@ export function Overlay({ preview }: { preview?: { state: OverlayState; moment: 
     }
   }, [preview]);
 
-  // The mouth moves for exactly as long as the audio plays.
+  // The panda is silent: its mouth moves for about as long as reading the line takes.
   const talkTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const talkFor = useCallback((ms: number) => {
     clearTimeout(talkTimer.current);
@@ -39,11 +39,9 @@ export function Overlay({ preview }: { preview?: { state: OverlayState; moment: 
     const stop = [
       listen<OverlayState>("overlay://state", setState),
       listen<Moment>("overlay://moment", (m) => {
-        clearTimeout(talkTimer.current);
-        setTalking(false);
         setMoment(m);
+        talkFor(speakingMillis(m.line.text));
       }),
-      listen<Speaking>("overlay://speaking", (s) => talkFor(s.durationMs)),
     ];
     void invoke("overlay_ready");
     return () => stop.forEach((p) => void p.then((unlisten) => unlisten()));
@@ -54,9 +52,9 @@ export function Overlay({ preview }: { preview?: { state: OverlayState; moment: 
     if (!state.visible) setMoment(null);
   }, [state.visible]);
 
-  // The browser preview has no audio: estimate the speaking time instead.
+  // The browser preview is driven by props, not events.
   useEffect(() => {
-    if (preview && moment?.line.speak) talkFor(speakingMillis(moment.line.text));
+    if (preview && moment) talkFor(speakingMillis(moment.line.text));
   }, [preview, moment, talkFor]);
 
   // The bubble goes away on its own, but never while the cursor is on it.

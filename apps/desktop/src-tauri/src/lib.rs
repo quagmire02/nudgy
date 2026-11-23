@@ -16,7 +16,7 @@ use std::time::Duration;
 use nudgy_activity::{ActivityService, ServiceConfig, WindowsProbe};
 use nudgy_shared::{
     ActivityEvent, CloudStatus, ExtensionStatus, HitRect, Reminder, ReminderDraft, SessionView, Settings, TriggerKind,
-    UserAction, VoiceOption, WeeklyReport, constants,
+    UserAction, WeeklyReport, constants,
 };
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut, ShortcutState};
@@ -35,7 +35,7 @@ pub struct Core {
     pub tray: Mutex<Option<tray::TrayItems>>,
     /// The focus engine, on its own thread.
     pub brain: Mutex<Option<brain::Brain>>,
-    /// Line library and voice.
+    /// The line library: what the panda says.
     pub speech: speech::Speech,
     /// The cloud line writer, if one is configured.
     pub cloud: Option<nudgy_cloud::Cloud>,
@@ -64,9 +64,6 @@ fn update_settings(app: AppHandle, core: tauri::State<Core>, settings: Settings)
     }
     if let Some(service) = core.activity.lock().unwrap().as_ref() {
         service.set_private_apps(settings.private_apps.clone());
-    }
-    if let Some(tray) = core.tray.lock().unwrap().as_ref() {
-        let _ = tray.quiet.set_checked(settings.quiet_mode);
     }
     apply_autostart(&app, settings.autostart);
     actions::send(&app, brain::Msg::Settings(settings.clone()));
@@ -133,11 +130,6 @@ fn panda_hidden(core: tauri::State<Core>) -> bool {
 fn demo_moment(app: AppHandle, core: tauri::State<Core>, kind: TriggerKind) {
     let tone = core.settings.lock().unwrap().tone;
     speech::present(&app, demo::trigger(kind, tone), None);
-}
-
-#[tauri::command]
-fn list_voices() -> Vec<VoiceOption> {
-    speech::voices()
 }
 
 #[tauri::command]
@@ -251,7 +243,6 @@ fn apply_autostart(app: &AppHandle, enabled: bool) {
 
 fn register_hotkeys(app: &AppHandle) -> tauri::Result<()> {
     let open = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyN);
-    let quiet = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyQ);
     let remind = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyD);
     app.plugin(
         tauri_plugin_global_shortcut::Builder::new()
@@ -261,8 +252,6 @@ fn register_hotkeys(app: &AppHandle) -> tauri::Result<()> {
                 }
                 if shortcut == &open {
                     actions::open_main(app);
-                } else if shortcut == &quiet {
-                    actions::toggle_quiet(app);
                 } else if shortcut == &remind {
                     reminders::from_selection(app);
                 }
@@ -270,7 +259,7 @@ fn register_hotkeys(app: &AppHandle) -> tauri::Result<()> {
             .build(),
     )?;
     use tauri_plugin_global_shortcut::GlobalShortcutExt;
-    for shortcut in [open, quiet, remind] {
+    for shortcut in [open, remind] {
         if let Err(e) = app.global_shortcut().register(shortcut) {
             log::warn!("hotkey {shortcut:?} is taken by another app: {e}");
         }
@@ -344,7 +333,6 @@ pub fn run() {
             panda_hidden,
             demo_moment,
             session_view,
-            list_voices,
             cloud_status,
             weekly_report,
             save_share_card,

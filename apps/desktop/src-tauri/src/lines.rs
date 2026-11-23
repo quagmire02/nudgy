@@ -1,4 +1,4 @@
-//! Stand-in lines until the canned library and voice (milestone 4): one
+//! Fallback lines for when the canned library has nothing to say: one
 //! panda-voiced Coach line per trigger, with the slots filled in.
 
 use nudgy_shared::{Trigger, TriggerKind};

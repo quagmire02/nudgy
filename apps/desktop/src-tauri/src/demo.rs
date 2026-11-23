@@ -1,5 +1,5 @@
 //! Test triggers: make the panda react on demand, from the main window's
-//! "Test the panda" buttons. Same presentation, lines and voice as real
+//! "Test the panda" buttons. Same presentation and lines as real
 //! triggers, with a sample context.
 
 use std::sync::atomic::{AtomicU64, Ordering};

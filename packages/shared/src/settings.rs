@@ -11,10 +11,6 @@ use crate::constants;
 pub struct Settings {
     pub onboarded: bool,
     pub tone: Tone,
-    /// A Windows voice id from `list_voices`, or `default` for the system voice.
-    pub voice: String,
-    /// Bubble only, no voice.
-    pub quiet_mode: bool,
     pub character_size: CharacterSize,
     pub drift_threshold_min: u32,
     /// Personalised AI lines (quota-limited). Off = canned lines only.
@@ -36,8 +32,6 @@ impl Default for Settings {
         Self {
             onboarded: false,
             tone: Tone::Coach,
-            voice: "default".into(),
-            quiet_mode: false,
             character_size: CharacterSize::M,
             drift_threshold_min: constants::DRIFT_THRESHOLD_MS / 60_000,
             cloud_lines: true,

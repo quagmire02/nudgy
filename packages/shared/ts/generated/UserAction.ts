@@ -5,4 +5,4 @@ import type { Tone } from "./Tone";
 /**
  * Everything the user can tell the engine, from the overlay, tray or hotkeys.
  */
-export type UserAction = { "type": "start_session", goal: Goal, } | { "type": "end_session" } | { "type": "take_break", minutes: number, } | { "type": "end_break" } | { "type": "back_to_work" } | { "type": "actually_working" } | { "type": "snooze", minutes: number, } | { "type": "unsnooze" } | { "type": "answer", triggerId: string, yes: boolean, } | { "type": "dismiss", triggerId: string, } | { "type": "set_tone", tone: Tone, } | { "type": "set_quiet_mode", on: boolean, } | { "type": "set_tracking_paused", paused: boolean, };
+export type UserAction = { "type": "start_session", goal: Goal, } | { "type": "end_session" } | { "type": "take_break", minutes: number, } | { "type": "end_break" } | { "type": "back_to_work" } | { "type": "actually_working" } | { "type": "snooze", minutes: number, } | { "type": "unsnooze" } | { "type": "answer", triggerId: string, yes: boolean, } | { "type": "dismiss", triggerId: string, } | { "type": "set_tone", tone: Tone, } | { "type": "set_tracking_paused", paused: boolean, };

@@ -5,7 +5,7 @@
   "scripts": {
     "contracts": "cargo test -p nudgy-shared && pnpm --filter @nudgy/shared typecheck",
     "contracts:check": "pnpm contracts && git diff --exit-code -- packages/shared/ts/generated",
-    "test": "pnpm contracts && cargo test -p nudgy-activity -p nudgy-engine -p nudgy-lines -p nudgy-voice -p nudgy-desktop && pnpm --filter @nudgy/extension --filter @nudgy/desktop test",
+    "test": "pnpm contracts && cargo test -p nudgy-activity -p nudgy-engine -p nudgy-lines -p nudgy-desktop && pnpm --filter @nudgy/extension --filter @nudgy/desktop test",
     "test:embeddings": "cargo test -p nudgy-engine --features embeddings",
     "fetch-model": "node scripts/fetch-model.mjs",
     "typecheck": "pnpm -r typecheck",

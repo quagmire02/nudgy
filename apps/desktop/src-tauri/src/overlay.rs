@@ -99,7 +99,6 @@ pub fn current_state(core: &Core) -> OverlayState {
         visible: !ui.panda_hidden && !core.overlay.context_hidden.load(Ordering::SeqCst),
         base: core.overlay.base.lock().unwrap().unwrap_or(CharacterState::IdleDozing),
         size: settings.character_size,
-        quiet_mode: settings.quiet_mode,
     }
 }
 

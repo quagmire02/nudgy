@@ -30,6 +30,9 @@ pub struct Overlay {
     regions: Mutex<Vec<HitRect>>,
     /// Hidden by context: call, fullscreen, presentation, lock, sleep.
     context_hidden: AtomicBool,
+    /// A session is running and the fullscreen app is a distraction (a game,
+    /// a video): the panda stays up to nudge over it instead of hiding.
+    pub over_fullscreen: AtomicBool,
     base: Mutex<Option<CharacterState>>,
     /// Physical top-left after a drag, saved once the panda stops moving.
     pending_position: Mutex<Option<((i32, i32), Instant)>>,
@@ -137,7 +140,8 @@ pub fn hide_reason(event: &ActivityEvent) -> Option<&'static str> {
 }
 
 pub fn set_context_hidden(app: &AppHandle, event: &ActivityEvent) {
-    let reason = hide_reason(event);
+    let over_fullscreen = app.state::<Core>().overlay.over_fullscreen.load(Ordering::SeqCst);
+    let reason = hide_reason(event).filter(|why| !(*why == "fullscreen" && over_fullscreen));
     let hidden = reason.is_some();
     let core = app.state::<Core>();
     if core.overlay.context_hidden.swap(hidden, Ordering::SeqCst) != hidden {

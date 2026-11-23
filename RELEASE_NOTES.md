@@ -19,5 +19,5 @@ A sleepy panda in armor that sits on your screen and keeps you on task. Windows 
 Tells Nudgy which website is open. Until it's in the stores: open `chrome://extensions` (or `edge://extensions`), turn on Developer mode, click **Load unpacked**, pick `%LOCALAPPDATA%\Nudgy\extension`, then press **Connect browser** in Nudgy's Settings and **Connect** in the extension.
 
 ## Known issues
-- During fullscreen games the panda hides; its nudge shows when you leave fullscreen.
+- Over a fullscreen game or video during a session, the panda stays up to nudge you. Games in *exclusive* fullscreen mode draw over everything, so there the nudge shows when you alt-tab or leave the game; borderless/windowed fullscreen (the default in most games, including Fortnite) works.
 - Windows notifications don't show while Windows' Do Not Disturb or full-screen mode is on (the panda still shows reminders).

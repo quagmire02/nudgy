@@ -13,7 +13,7 @@ use nudgy_activity::now_ms;
 use nudgy_engine::embed::MiniLm;
 use nudgy_engine::streak::day_streak;
 use nudgy_engine::{Classifier, Engine, EngineSettings, Input, Lexical, Output, Similarity};
-use nudgy_shared::{ActivityEvent, DeadlineHint, Session, SessionState, SessionView, Settings, UnixMs, UserAction};
+use nudgy_shared::{ActivityEvent, DeadlineHint, Label, Session, SessionState, SessionView, Settings, UnixMs, UserAction};
 use tauri::{AppHandle, Emitter, Manager};
 
 use crate::{Core, overlay, speech};
@@ -134,8 +134,12 @@ pub fn start(app: &AppHandle) -> Brain {
         .spawn(move || {
             loop {
                 let now = now_ms();
+                let mut context = None;
                 let input = match rx.recv_timeout(Duration::from_secs(1)) {
-                    Ok(Msg::Activity(event)) => Input::Activity(event),
+                    Ok(Msg::Activity(event)) => {
+                        context = Some(event.clone());
+                        Input::Activity(event)
+                    }
                     Ok(Msg::Action(action)) => Input::Action(action),
                     Ok(Msg::Deadlines(deadlines)) => {
                         engine.set_deadlines(deadlines);
@@ -164,6 +168,13 @@ pub fn start(app: &AppHandle) -> Brain {
                 };
                 let out = engine.handle(input, now);
                 apply(&app, &mut engine, &shared_view, out, now, false);
+                // Hide for calls and presentations; over a fullscreen distraction
+                // during a session, stay up so the nudge is seen.
+                if let Some(event) = context {
+                    let distracted = engine.session().is_some() && engine.classification().is_some_and(|c| c.label == Label::Distracting);
+                    app.state::<Core>().overlay.over_fullscreen.store(distracted, std::sync::atomic::Ordering::SeqCst);
+                    overlay::set_context_hidden(&app, &event);
+                }
             }
         })
         .expect("spawn brain thread");

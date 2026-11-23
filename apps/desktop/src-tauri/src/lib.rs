@@ -210,22 +210,6 @@ fn start_activity(app: &AppHandle) -> Option<ActivityService> {
     }
 }
 
-/// Hides the panda during calls, fullscreen, presentations, lock and sleep.
-fn follow_activity(app: &AppHandle) {
-    let Some(updates) = app.state::<Core>().activity.lock().unwrap().as_ref().map(|s| s.subscribe()) else {
-        return;
-    };
-    let app = app.clone();
-    std::thread::Builder::new()
-        .name("nudgy-overlay-context".into())
-        .spawn(move || {
-            for update in updates {
-                overlay::set_context_hidden(&app, &update.current);
-            }
-        })
-        .expect("spawn overlay context thread");
-}
-
 /// Start with Windows, once onboarding (where the user chooses) is done.
 fn apply_autostart(settings: &Settings) {
     if settings.onboarded
@@ -312,7 +296,6 @@ pub fn run() {
             overlay::create(&handle, &settings, saved_position)?;
             *app.state::<Core>().tray.lock().unwrap() = Some(tray::build(&handle)?);
             register_hotkeys(&handle)?;
-            follow_activity(&handle);
             *app.state::<Core>().brain.lock().unwrap() = Some(brain::start(&handle));
             reminders::start_scheduler(&handle);
             apply_autostart(&settings);

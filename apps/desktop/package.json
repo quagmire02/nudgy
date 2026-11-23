@@ -14,6 +14,7 @@
   "dependencies": {
     "@nudgy/shared": "workspace:*",
     "@tauri-apps/api": "^2",
+    "chrono-node": "^2.10.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

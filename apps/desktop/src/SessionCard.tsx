@@ -68,6 +68,12 @@ export function SessionCard() {
             Start
           </button>
         </form>
+        {view.lastSession && (
+          <p className="muted">
+            Last session: {view.lastSession.goal.text} · focused {minutes(view.lastSession.stats.focused)} min · distracted{" "}
+            {minutes(view.lastSession.stats.distracting)} min · {view.lastSession.stats.nudges} nudges
+          </p>
+        )}
         {view.dayStreak > 0 && <p className="muted">{view.dayStreak}-day streak. Keep it going.</p>}
       </section>
     );

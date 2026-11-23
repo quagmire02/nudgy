@@ -5,7 +5,7 @@
 use std::path::Path;
 
 use chrono::{Local, TimeZone};
-use nudgy_shared::{ActivityEvent, Override, Presence, Session, SessionState, UnixMs, constants};
+use nudgy_shared::{ActivityEvent, Override, Presence, Reminder, Session, SessionState, UnixMs, constants};
 use rusqlite::{Connection, OptionalExtension, params};
 
 use crate::recorder::Change;
@@ -13,7 +13,7 @@ use crate::recorder::Change;
 // Links libtomcrypt, SQLCipher's crypto provider.
 use nudgy_tomcrypt as _;
 
-const SCHEMA_VERSION: i64 = 2;
+const SCHEMA_VERSION: i64 = 3;
 const DAY_MS: UnixMs = 86_400_000;
 
 #[derive(Debug, thiserror::Error)]
@@ -78,6 +78,15 @@ impl Store {
                     name     TEXT    NOT NULL,
                     duration INTEGER NOT NULL,
                     PRIMARY KEY (day, key)
+                 );",
+            )?;
+        }
+        if version < 3 {
+            self.conn.execute_batch(
+                "CREATE TABLE IF NOT EXISTS reminders (
+                    id       TEXT    PRIMARY KEY,
+                    event_at INTEGER NOT NULL,
+                    reminder TEXT    NOT NULL  -- Reminder as JSON
                  );",
             )?;
         }
@@ -234,10 +243,27 @@ impl Store {
         rows.map(|json| Ok(serde_json::from_str(&json?)?)).collect()
     }
 
+    pub fn save_reminder(&self, reminder: &Reminder) -> Result<()> {
+        self.conn.execute(
+            "INSERT INTO reminders (id, event_at, reminder) VALUES (?1, ?2, ?3)
+             ON CONFLICT (id) DO UPDATE SET event_at = excluded.event_at, reminder = excluded.reminder",
+            params![reminder.id, reminder.event_at, serde_json::to_string(reminder)?],
+        )?;
+        Ok(())
+    }
+
+    /// Reminders not cancelled whose event is after `since`, soonest first.
+    pub fn reminders(&self, since: UnixMs) -> Result<Vec<Reminder>> {
+        let mut stmt = self.conn.prepare("SELECT reminder FROM reminders WHERE event_at >= ?1 ORDER BY event_at")?;
+        let rows = stmt.query_map([since], |r| r.get::<_, String>(0))?;
+        let all: Vec<Reminder> = rows.map(|json| Ok(serde_json::from_str(&json?)?)).collect::<Result<_>>()?;
+        Ok(all.into_iter().filter(|r| !r.cancelled).collect())
+    }
+
     /// "Delete all my data": every event and total, then compacts the file.
     pub fn delete_all(&mut self) -> Result<()> {
         self.conn.execute_batch(
-            "DELETE FROM events; DELETE FROM daily_totals; DELETE FROM sessions; DELETE FROM overrides; VACUUM;",
+            "DELETE FROM events; DELETE FROM daily_totals; DELETE FROM sessions; DELETE FROM overrides; DELETE FROM reminders; VACUUM;",
         )?;
         self.last_id = None;
         Ok(())

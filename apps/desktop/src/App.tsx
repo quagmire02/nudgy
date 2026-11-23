@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type { ActivityEvent, CharacterSize, CloudStatus, ExtensionStatus, Settings, Tone, TriggerKind, VoiceOption } from "@nudgy/shared";
 import { SessionCard } from "./SessionCard";
+import { Reports } from "./Reports";
+import { Reminders } from "./Reminders";
+import { Onboarding } from "./Onboarding";
 import "./App.css";
-
-// The main window. Session controls arrive with the engine (milestone 3),
-// onboarding with the installer (milestone 8).
 
 const TEST_MOMENTS: [TriggerKind, string][] = [
   ["session_start", "Session start"],
@@ -90,12 +90,18 @@ function App() {
     setPandaHidden(!pandaHidden);
   };
 
+  if (settings && !settings.onboarded) {
+    return <Onboarding settings={settings} voices={voices} update={update} />;
+  }
+
   return (
     <main className="container">
       <h1>Nudgy</h1>
       {error && <p className="error">{error}</p>}
 
       <SessionCard />
+      <Reminders />
+      <Reports />
 
       <section>
         <h2>Panda</h2>
@@ -199,6 +205,27 @@ function App() {
                 : ` · ${cloud.quota.limit - cloud.quota.used} of ${cloud.quota.limit} left today`)}
           </label>
         )}
+      </section>
+
+      <section>
+        <h2>General</h2>
+        {settings && (
+          <label>
+            <input type="checkbox" checked={settings.autostart} onChange={(e) => update({ autostart: e.target.checked })} /> Start
+            with Windows
+          </label>
+        )}
+        <p>
+          <button
+            onClick={async () => {
+              if (confirm("Delete all recorded activity, sessions and reminders? This can't be undone.")) {
+                await invoke("delete_activity_data");
+              }
+            }}
+          >
+            Delete my data
+          </button>
+        </p>
       </section>
     </main>
   );

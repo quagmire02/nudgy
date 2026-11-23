@@ -16,6 +16,8 @@ pub struct UiState {
     pub overlay_position: Option<(i32, i32)>,
     /// The user hid the panda from the tray.
     pub panda_hidden: bool,
+    /// Last Sunday the weekly report was announced (YYYY-MM-DD).
+    pub weekly_shown: Option<String>,
 }
 
 pub struct Store {

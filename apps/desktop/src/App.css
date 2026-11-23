@@ -126,3 +126,56 @@ button:disabled {
   opacity: 0.5;
   cursor: default;
 }
+
+.paste,
+.reminder-form input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 4px 0;
+  padding: 6px 10px;
+  font: inherit;
+  border: 1.5px solid currentColor;
+  border-radius: 8px;
+}
+
+.reminder-form {
+  max-width: 420px;
+}
+
+button.link {
+  padding: 0 4px;
+  border: none;
+  background: none;
+  color: #c0392b;
+  font-size: 12px;
+}
+
+.bars {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  height: 84px;
+  margin: 8px 0;
+}
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bar span {
+  width: 22px;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: #8cc265;
+}
+
+.onboarding {
+  max-width: 520px;
+}
+
+.onboarding ol {
+  padding-left: 20px;
+}

@@ -24,6 +24,7 @@ import type { SessionView } from "./SessionView";
 import type { Speaking } from "./Speaking";
 import type { VoiceOption } from "./VoiceOption";
 import type { CloudStatus } from "./CloudStatus";
+import type { WeeklyReport } from "./WeeklyReport";
 
 export const activityEvents: ActivityEvent[] = [
   {
@@ -739,5 +740,28 @@ export const cloudStatuses: CloudStatus[] = [
       "resetsAt": 1792605600000,
       "used": 20
     }
+  }
+];
+
+export const weeklyReports: WeeklyReport[] = [
+  {
+    "dayStreak": 4,
+    "days": [
+      {
+        "focused": 7200000,
+        "label": "Thu"
+      }
+    ],
+    "distracting": 21600000,
+    "focused": 39600000,
+    "from": 1791972000000,
+    "sessions": 6,
+    "to": 1792576800000,
+    "top": [
+      {
+        "duration": 14400000,
+        "name": "YouTube"
+      }
+    ]
   }
 ];

@@ -12,7 +12,7 @@ use nudgy_activity::now_ms;
 use nudgy_engine::embed::MiniLm;
 use nudgy_engine::streak::day_streak;
 use nudgy_engine::{Classifier, Engine, EngineSettings, Input, Lexical, Output, Similarity};
-use nudgy_shared::{ActivityEvent, SessionState, SessionView, Settings, UnixMs, UserAction};
+use nudgy_shared::{ActivityEvent, DeadlineHint, SessionState, SessionView, Settings, UnixMs, UserAction};
 use tauri::{AppHandle, Emitter, Manager};
 
 use crate::{Core, overlay, speech};
@@ -21,6 +21,8 @@ const DAY_MS: UnixMs = 86_400_000;
 
 pub enum Msg {
     Activity(ActivityEvent),
+    /// Upcoming reminders that can sharpen nudges.
+    Deadlines(Vec<DeadlineHint>),
     Action(UserAction),
     Settings(Settings),
     Stop,
@@ -122,6 +124,10 @@ pub fn start(app: &AppHandle) -> Brain {
                 let input = match rx.recv_timeout(Duration::from_secs(1)) {
                     Ok(Msg::Activity(event)) => Input::Activity(event),
                     Ok(Msg::Action(action)) => Input::Action(action),
+                    Ok(Msg::Deadlines(deadlines)) => {
+                        engine.set_deadlines(deadlines);
+                        continue;
+                    }
                     Ok(Msg::Settings(settings)) => {
                         let streak = engine.settings().day_streak;
                         engine.set_settings(engine_settings(&settings, streak));
@@ -146,6 +152,7 @@ pub fn start(app: &AppHandle) -> Brain {
 
 fn apply(app: &AppHandle, engine: &mut Engine, view: &Mutex<SessionView>, out: Vec<Output>, now: UnixMs, quitting: bool) {
     let core = app.state::<Core>();
+    let mut ended = None;
     for output in out {
         match output {
             Output::Trigger(trigger) if !quitting => {
@@ -163,6 +170,7 @@ fn apply(app: &AppHandle, engine: &mut Engine, view: &Mutex<SessionView>, out: V
                     let mut settings = engine.settings().clone();
                     settings.day_streak = streak_now(app);
                     engine.set_settings(settings);
+                    ended = Some(session);
                 }
             }
             Output::Override(ov) => {
@@ -178,6 +186,7 @@ fn apply(app: &AppHandle, engine: &mut Engine, view: &Mutex<SessionView>, out: V
     }
     let fresh = SessionView {
         session: engine.session().cloned(),
+        last_session: ended.or_else(|| view.lock().unwrap().last_session.clone()),
         classification: engine.session().and(engine.classification().cloned()),
         day_streak: engine.settings().day_streak,
     };

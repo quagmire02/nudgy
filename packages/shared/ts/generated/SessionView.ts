@@ -4,6 +4,10 @@ import type { Session } from "./Session";
 
 export type SessionView = { session?: Session, 
 /**
+ * The most recent finished session, for the summary card.
+ */
+lastSession?: Session, 
+/**
  * How the activity in front is judged right now.
  */
 classification?: Classification, 

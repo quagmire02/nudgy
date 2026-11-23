@@ -175,6 +175,11 @@ fn truncate_words(text: &str, max: usize) -> String {
 }
 
 /// Domains read aloud as their brand: "instagram.com" -> "Instagram".
+/// How an app or site is said and shown: "instagram.com" -> "Instagram".
+pub fn brand(app: &str) -> String {
+    speakable_app(app)
+}
+
 fn speakable_app(app: &str) -> String {
     const BRANDS: &[(&str, &str)] = &[
         ("instagram.com", "Instagram"), ("facebook.com", "Facebook"), ("youtube.com", "YouTube"),

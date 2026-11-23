@@ -4,6 +4,8 @@ mod cloud;
 mod demo;
 mod lines;
 mod overlay;
+mod reminders;
+mod reports;
 mod speech;
 mod store;
 mod tray;
@@ -12,7 +14,10 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use nudgy_activity::{ActivityService, ServiceConfig, WindowsProbe};
-use nudgy_shared::{ActivityEvent, CloudStatus, ExtensionStatus, HitRect, SessionView, Settings, TriggerKind, UserAction, VoiceOption, constants};
+use nudgy_shared::{
+    ActivityEvent, CloudStatus, ExtensionStatus, HitRect, Reminder, ReminderDraft, SessionView, Settings, TriggerKind,
+    UserAction, VoiceOption, WeeklyReport, constants,
+};
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut, ShortcutState};
 
@@ -63,6 +68,7 @@ fn update_settings(app: AppHandle, core: tauri::State<Core>, settings: Settings)
     if let Some(tray) = core.tray.lock().unwrap().as_ref() {
         let _ = tray.quiet.set_checked(settings.quiet_mode);
     }
+    apply_autostart(&app, settings.autostart);
     actions::send(&app, brain::Msg::Settings(settings.clone()));
     overlay::push_state(&app);
     settings
@@ -135,6 +141,36 @@ fn list_voices() -> Vec<VoiceOption> {
 }
 
 #[tauri::command]
+fn weekly_report(app: AppHandle) -> WeeklyReport {
+    reports::weekly(&app)
+}
+
+#[tauri::command]
+fn save_share_card(app: AppHandle, png: Vec<u8>) -> CommandResult<String> {
+    reports::save_share_card(&app, png)
+}
+
+#[tauri::command]
+fn save_reminder(app: AppHandle, draft: ReminderDraft) -> CommandResult<Reminder> {
+    reminders::save(&app, draft)
+}
+
+#[tauri::command]
+fn list_reminders(app: AppHandle) -> Vec<Reminder> {
+    reminders::upcoming(&app)
+}
+
+#[tauri::command]
+fn cancel_reminder(app: AppHandle, id: String) {
+    reminders::cancel(&app, &id);
+}
+
+#[tauri::command]
+fn export_ics(app: AppHandle) -> CommandResult<String> {
+    reminders::export_ics(&app)
+}
+
+#[tauri::command]
 fn cloud_status(core: tauri::State<Core>) -> CloudStatus {
     speech::cloud_status(&core)
 }
@@ -195,9 +231,28 @@ fn follow_activity(app: &AppHandle) {
         .expect("spawn overlay context thread");
 }
 
+/// Start with Windows. Only installed builds register; a dev build would
+/// point the login entry at a debug exe in `target/`.
+fn apply_autostart(app: &AppHandle, enabled: bool) {
+    if cfg!(debug_assertions) {
+        return;
+    }
+    use tauri_plugin_autostart::ManagerExt;
+    let launcher = app.autolaunch();
+    let result = match (enabled, launcher.is_enabled().unwrap_or(false)) {
+        (true, false) => launcher.enable(),
+        (false, true) => launcher.disable(),
+        _ => Ok(()),
+    };
+    if let Err(e) = result {
+        log::warn!("can't change start-with-Windows: {e}");
+    }
+}
+
 fn register_hotkeys(app: &AppHandle) -> tauri::Result<()> {
     let open = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyN);
     let quiet = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyQ);
+    let remind = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyD);
     app.plugin(
         tauri_plugin_global_shortcut::Builder::new()
             .with_handler(move |app, shortcut, event| {
@@ -208,12 +263,14 @@ fn register_hotkeys(app: &AppHandle) -> tauri::Result<()> {
                     actions::open_main(app);
                 } else if shortcut == &quiet {
                     actions::toggle_quiet(app);
+                } else if shortcut == &remind {
+                    reminders::from_selection(app);
                 }
             })
             .build(),
     )?;
     use tauri_plugin_global_shortcut::GlobalShortcutExt;
-    for shortcut in [open, quiet] {
+    for shortcut in [open, quiet, remind] {
         if let Err(e) = app.global_shortcut().register(shortcut) {
             log::warn!("hotkey {shortcut:?} is taken by another app: {e}");
         }
@@ -227,6 +284,8 @@ pub fn run() {
         // One Nudgy at a time: a second launch just opens the running one's
         // window (two instances would track and write the same database).
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| actions::open_main(app)))
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
         // Stdout and a rotating file in the app's log folder.
         .plugin(tauri_plugin_log::Builder::new().level(log::LevelFilter::Info).build())
         .setup(|app| {
@@ -252,6 +311,12 @@ pub fn run() {
             register_hotkeys(&handle)?;
             follow_activity(&handle);
             *app.state::<Core>().brain.lock().unwrap() = Some(brain::start(&handle));
+            reminders::start_scheduler(&handle);
+            apply_autostart(&handle, settings.autostart);
+            // After onboarding Nudgy starts in the tray; dev builds always show the window.
+            if !settings.onboarded || cfg!(debug_assertions) {
+                actions::open_main(&handle);
+            }
             Ok(())
         })
         .on_window_event(|window, event| match (window.label(), event) {
@@ -281,6 +346,12 @@ pub fn run() {
             session_view,
             list_voices,
             cloud_status,
+            weekly_report,
+            save_share_card,
+            save_reminder,
+            list_reminders,
+            cancel_reminder,
+            export_ics,
             overlay_ready,
             overlay_set_regions,
             panda_clicked,

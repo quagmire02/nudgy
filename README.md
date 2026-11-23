@@ -21,8 +21,7 @@ A small armored panda on your Windows desktop that notices when you drift from y
 
 ## Commands
 
-Run these from the `nudgy` folder (`cd D:startup
-udgy`).
+Run these from the `nudgy` folder (`cd D:\c_startup\nudgy`).
 
 ```bash
 pnpm install
@@ -33,6 +32,7 @@ pnpm record 3600      # record real activity for an hour and report missing time
 pnpm fetch-model      # download the 90 MB embedding model (smarter goal matching)
 pnpm test:embeddings  # engine tests with the model
 pnpm build:extension  # build apps/extension/dist
+pnpm --filter @nudgy/desktop tauri build   # the installer (see Installing)
 ```
 
 ## Contracts
@@ -89,3 +89,17 @@ The art is `character/panda.svg` with CSS animations (`apps/desktop/src/overlay/
 - **Filter.** Every line, canned or AI, passes `crates/lines/src/filter.rs`: at most 140 characters, plain text, nothing about appearance, body, intelligence, identity or mental health, no swearing unless enabled. Tests run every library line through it with the longest possible slot values.
 - **Voice.** The Windows built-in voices (WinRT `SpeechSynthesizer`) at 0.9× speed: offline, free, already installed. Pick one in the main window. Acceptance: all 27 triggers × 3 tones are ready to play in under 1 second (53 ms average, 104 ms worst on the dev machine). The spec's Kokoro/Piper voices need the GPL espeak-ng phonemiser and a 100+ MB model, so they're left for v1.
 - **Quiet mode** shows the bubble without speaking; nothing is spoken while the panda is hidden. The talking animation lasts exactly as long as the audio.
+
+## Reports and reminders
+
+- **Weekly report.** Main window, "This week": focus and distraction hours, a bar per day, top three distractions, streak. "Save share image" writes a PNG to `Pictures\Nudgy` with totals and app names only, never titles or URLs. On Sunday after 6 pm Nudgy announces the week with a toast and the panda.
+- **Reminders.** Select text with a date anywhere and press **Ctrl+Alt+D** (or paste it into the Reminders box). chrono-node reads it day-first (05/12 is 5 December); fix anything in the form and save. Nudgy reminds you the evening before at 8 pm and an hour before (8 am for all-day events) with a Windows toast plus the panda. Reminders are stored in the encrypted database, sharpen drift nudges near a deadline, and export to `Documents\Nudgy reminders.ics`.
+
+## Installing
+
+`pnpm --filter @nudgy/desktop tauri build` produces `target/release/bundle/nsis/Nudgy_0.1.0_x64-setup.exe` (about 86 MB, mostly the embedding model). It installs for the current user, no admin needed, and bundles the embedding model and the browser extension (the `extension` folder inside the install folder, for "Load unpacked"). Run `pnpm fetch-model` and `pnpm build:extension` first.
+
+- First launch shows onboarding (tone, voice, extension, start with Windows). After that Nudgy starts in the tray; Ctrl+Alt+N opens the window.
+- Start with Windows is on by default and only registers from an installed build.
+- Release builds run under a strict Content Security Policy; dev builds don't.
+- **Not done:** code signing (SmartScreen warns until the installer is signed with your certificate) and auto-update (needs your updater signing key and somewhere to host releases). Both are config additions in `tauri.conf.json`.

@@ -160,6 +160,12 @@ impl Engine {
         }
     }
 
+    /// The window title in front: sent with AI line requests only if the
+    /// user opted in.
+    pub fn current_title(&self) -> Option<&str> {
+        self.current.as_ref().and_then(|e| e.foreground.title())
+    }
+
     pub fn session(&self) -> Option<&Session> {
         self.run.as_ref().map(|r| &r.session)
     }

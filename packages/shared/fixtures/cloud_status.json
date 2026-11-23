@@ -1,0 +1,4 @@
+[
+  { "configured": false, "enabled": true },
+  { "configured": true, "enabled": true, "quota": { "used": 20, "limit": 20, "resetsAt": 1792605600000 } }
+]

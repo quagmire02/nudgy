@@ -10,6 +10,7 @@ export type { CharacterSize } from "./CharacterSize";
 export type { CharacterState } from "./CharacterState";
 export type { Classification } from "./Classification";
 export type { ClassificationReason } from "./ClassificationReason";
+export type { CloudStatus } from "./CloudStatus";
 export type { ContextFlags } from "./ContextFlags";
 export type { DateOrder } from "./DateOrder";
 export type { DeadlineHint } from "./DeadlineHint";

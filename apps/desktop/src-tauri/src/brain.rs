@@ -148,7 +148,10 @@ fn apply(app: &AppHandle, engine: &mut Engine, view: &Mutex<SessionView>, out: V
     let core = app.state::<Core>();
     for output in out {
         match output {
-            Output::Trigger(trigger) if !quitting => speech::present(app, trigger),
+            Output::Trigger(trigger) if !quitting => {
+                let title = engine.current_title().map(str::to_string);
+                speech::present(app, trigger, title);
+            }
             Output::Trigger(_) => {}
             Output::Session(session) => {
                 if let Some(a) = core.activity.lock().unwrap().as_ref()

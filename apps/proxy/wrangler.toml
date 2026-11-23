@@ -1,0 +1,22 @@
+# Nudgy's cloud line writer. Secrets (set once, never in this file):
+#   wrangler secret put TOKEN_SECRET     # 32+ random bytes, signs device tokens
+#   wrangler secret put GEMINI_API_KEY   # Google AI Studio key
+name = "nudgy-proxy"
+main = "src/worker.ts"
+compatibility_date = "2026-10-01"
+
+[vars]
+# Personalised lines per device per local day on the free tier.
+FREE_DAILY_LINES = "20"
+MODEL = "gemini-2.5-flash-lite"
+
+[[durable_objects.bindings]]
+name = "COUNTERS"
+class_name = "Counter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Counter"]
+
+[observability]
+enabled = true

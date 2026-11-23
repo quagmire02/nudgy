@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import type { ActivityEvent, CharacterSize, ExtensionStatus, Settings, Tone, TriggerKind, VoiceOption } from "@nudgy/shared";
+import type { ActivityEvent, CharacterSize, CloudStatus, ExtensionStatus, Settings, Tone, TriggerKind, VoiceOption } from "@nudgy/shared";
 import { SessionCard } from "./SessionCard";
 import "./App.css";
 
@@ -53,6 +53,7 @@ function App() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [pandaHidden, setPandaHidden] = useState(false);
   const [voices, setVoices] = useState<VoiceOption[]>([]);
+  const [cloud, setCloud] = useState<CloudStatus | null>(null);
   const [current, setCurrent] = useState<ActivityEvent | null>(null);
   const [recent, setRecent] = useState<ActivityEvent[]>([]);
   const [extension, setExtension] = useState<ExtensionStatus | null>(null);
@@ -64,6 +65,7 @@ function App() {
       setCurrent(await invoke<ActivityEvent | null>("current_activity"));
       setRecent(await invoke<ActivityEvent[]>("recent_activity", { limit: 8 }));
       setExtension(await invoke<ExtensionStatus>("extension_status"));
+      setCloud(await invoke<CloudStatus>("cloud_status"));
       setError(null);
     } catch (e) {
       setError(String(e));
@@ -181,6 +183,21 @@ function App() {
           <p className="muted">Pairing is open: click Connect in the Nudgy extension.</p>
         ) : (
           <button onClick={async () => setExtension(await invoke<ExtensionStatus>("connect_browser"))}>Connect browser</button>
+        )}
+      </section>
+
+      <section>
+        <h2>AI lines</h2>
+        {cloud && !cloud.configured && <p className="muted">Off: no line writer configured. The panda uses its built-in lines.</p>}
+        {cloud?.configured && settings && (
+          <label>
+            <input type="checkbox" checked={settings.cloudLines} onChange={(e) => update({ cloudLines: e.target.checked })} />{" "}
+            Personalised lines
+            {cloud.quota &&
+              (cloud.quota.used >= cloud.quota.limit
+                ? " · used up, refresh at midnight"
+                : ` · ${cloud.quota.limit - cloud.quota.used} of ${cloud.quota.limit} left today`)}
+          </label>
         )}
       </section>
     </main>

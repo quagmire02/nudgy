@@ -1,5 +1,6 @@
 mod actions;
 mod brain;
+mod cloud;
 mod demo;
 mod lines;
 mod overlay;
@@ -11,7 +12,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use nudgy_activity::{ActivityService, ServiceConfig, WindowsProbe};
-use nudgy_shared::{ActivityEvent, ExtensionStatus, HitRect, SessionView, Settings, TriggerKind, UserAction, VoiceOption, constants};
+use nudgy_shared::{ActivityEvent, CloudStatus, ExtensionStatus, HitRect, SessionView, Settings, TriggerKind, UserAction, VoiceOption, constants};
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut, ShortcutState};
 
@@ -31,6 +32,8 @@ pub struct Core {
     pub brain: Mutex<Option<brain::Brain>>,
     /// Line library and voice.
     pub speech: speech::Speech,
+    /// The cloud line writer, if one is configured.
+    pub cloud: Option<nudgy_cloud::Cloud>,
 }
 
 type CommandResult<T> = Result<T, String>;
@@ -123,12 +126,17 @@ fn panda_hidden(core: tauri::State<Core>) -> bool {
 #[tauri::command]
 fn demo_moment(app: AppHandle, core: tauri::State<Core>, kind: TriggerKind) {
     let tone = core.settings.lock().unwrap().tone;
-    speech::present(&app, demo::trigger(kind, tone));
+    speech::present(&app, demo::trigger(kind, tone), None);
 }
 
 #[tauri::command]
 fn list_voices() -> Vec<VoiceOption> {
     speech::voices()
+}
+
+#[tauri::command]
+fn cloud_status(core: tauri::State<Core>) -> CloudStatus {
+    speech::cloud_status(&core)
 }
 
 /// The overlay page loaded: send it the current state.
@@ -235,6 +243,7 @@ pub fn run() {
                 tray: Mutex::new(None),
                 brain: Mutex::new(None),
                 speech: speech::Speech::new(),
+                cloud: app.path().app_data_dir().ok().and_then(cloud::start),
             });
             let handle = app.handle().clone();
             *app.state::<Core>().activity.lock().unwrap() = start_activity(&handle);
@@ -271,6 +280,7 @@ pub fn run() {
             demo_moment,
             session_view,
             list_voices,
+            cloud_status,
             overlay_ready,
             overlay_set_regions,
             panda_clicked,

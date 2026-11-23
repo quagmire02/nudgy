@@ -4,7 +4,10 @@
 //! identity, intelligence or mental health; no slurs; no swearing unless the
 //! user turned it on; plain text; at most `LINE_MAX_CHARS`.
 
+use std::sync::OnceLock;
+
 use nudgy_shared::constants::LINE_MAX_CHARS;
+use serde::Deserialize;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Rejection {
@@ -16,30 +19,25 @@ pub enum Rejection {
     Swearing(&'static str),
 }
 
-/// Off limits in every tone. Matched as whole words, case-insensitively.
-/// Words that only ever point at a person, not at time spent; ambiguous
-/// ones ("short walk", "face the work") are left out on purpose.
-const BLOCKED: &[&str] = &[
-    // appearance and body
-    "ugly", "fat", "fatty", "skinny", "obese", "chubby", "hideous", "pimple", "pimples", "acne", "bald", "wrinkles",
-    // intelligence
-    "stupid", "dumb", "idiot", "idiotic", "moron", "moronic", "brainless", "clueless", "imbecile", "retard", "retarded",
-    // mental health
-    "depressed", "depression", "anxious", "anxiety", "crazy", "insane", "psycho", "psychotic", "suicide", "suicidal",
-    "bipolar", "adhd", "ocd", "autistic", "lunatic", "deranged",
-    // identity
-    "gay", "lesbian", "trans", "girly", "manly", "muslim", "hindu", "christian",
-    // worth
-    "loser", "worthless", "useless", "pathetic", "hopeless", "lazy",
-];
+/// The word lists, shared with the cloud proxy (`data/filter.json`).
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Lists {
+    /// Off limits in every tone: words that only ever point at a person.
+    blocked: Vec<String>,
+    /// Allowed only with `swearing` on.
+    swears: Vec<String>,
+    /// `lazy` is the panda's own trait; lines may call the panda lazy, never the user.
+    self_descriptions: Vec<String>,
+}
 
-/// Allowed only with `swearing` on.
-const SWEARS: &[&str] = &["damn", "hell", "crap", "shit", "fuck", "fucking", "bloody", "ass", "bitch", "bastard"];
-
-/// `lazy` is the panda's own trait; lines may call the panda lazy, never the user.
-const SELF_DESCRIPTIONS: &[&str] = &["i'm lazy", "i am lazy", "lazy panda", "the lazy one", "i'm the lazy", "lazy, but", "lazier"];
+fn lists() -> &'static Lists {
+    static LISTS: OnceLock<Lists> = OnceLock::new();
+    LISTS.get_or_init(|| serde_json::from_str(include_str!("../../../data/filter.json")).expect("data/filter.json"))
+}
 
 pub fn check(text: &str, swearing: bool) -> Result<(), Rejection> {
+    let Lists { blocked: blocked_words, swears, self_descriptions } = lists();
     let trimmed = text.trim();
     if trimmed.is_empty() {
         return Err(Rejection::Empty);
@@ -58,13 +56,13 @@ pub fn check(text: &str, swearing: bool) -> Result<(), Rejection> {
     let words: Vec<&str> = lower.split(|c: char| !(c.is_alphanumeric() || c == '-' || c == '\'')).collect();
     for word in &words {
         let word = word.trim_matches('\'');
-        if let Some(blocked) = BLOCKED.iter().find(|b| **b == word) {
-            if *blocked == "lazy" && SELF_DESCRIPTIONS.iter().any(|s| lower.contains(s)) {
+        if let Some(blocked) = blocked_words.iter().find(|b| *b == word) {
+            if blocked == "lazy" && self_descriptions.iter().any(|s| lower.contains(s.as_str())) {
                 continue;
             }
             return Err(Rejection::Blocked(blocked));
         }
-        if !swearing && let Some(swear) = SWEARS.iter().find(|s| **s == word) {
+        if !swearing && let Some(swear) = swears.iter().find(|s| *s == word) {
             return Err(Rejection::Swearing(swear));
         }
     }

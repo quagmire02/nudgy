@@ -23,6 +23,7 @@ import type { HitRect } from "./HitRect";
 import type { SessionView } from "./SessionView";
 import type { Speaking } from "./Speaking";
 import type { VoiceOption } from "./VoiceOption";
+import type { CloudStatus } from "./CloudStatus";
 
 export const activityEvents: ActivityEvent[] = [
   {
@@ -722,5 +723,21 @@ export const voiceOptions: VoiceOption[] = [
     "id": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Speech_OneCore\\Voices\\Tokens\\MSTTS_V110_enUS_ZiraM",
     "language": "en-US",
     "name": "Microsoft Zira"
+  }
+];
+
+export const cloudStatuses: CloudStatus[] = [
+  {
+    "configured": false,
+    "enabled": true
+  },
+  {
+    "configured": true,
+    "enabled": true,
+    "quota": {
+      "limit": 20,
+      "resetsAt": 1792605600000,
+      "used": 20
+    }
   }
 ];

@@ -1,0 +1,13 @@
+{
+  "about": "The content filter's word lists, shared by the app (crates/lines/src/filter.rs) and the cloud proxy (apps/proxy/src/filter.ts). Whole words, case-insensitive. Ambiguous words ('short walk', 'face the work') are left out on purpose.",
+  "blocked": [
+    "ugly", "fat", "fatty", "skinny", "obese", "chubby", "hideous", "pimple", "pimples", "acne", "bald", "wrinkles",
+    "stupid", "dumb", "idiot", "idiotic", "moron", "moronic", "brainless", "clueless", "imbecile", "retard", "retarded",
+    "depressed", "depression", "anxious", "anxiety", "crazy", "insane", "psycho", "psychotic", "suicide", "suicidal",
+    "bipolar", "adhd", "ocd", "autistic", "lunatic", "deranged",
+    "gay", "lesbian", "trans", "girly", "manly", "muslim", "hindu", "christian",
+    "loser", "worthless", "useless", "pathetic", "hopeless", "lazy"
+  ],
+  "swears": ["damn", "hell", "crap", "shit", "fuck", "fucking", "bloody", "ass", "bitch", "bastard"],
+  "selfDescriptions": ["i'm lazy", "i am lazy", "lazy panda", "the lazy one", "i'm the lazy", "lazy, but", "lazier"]
+}

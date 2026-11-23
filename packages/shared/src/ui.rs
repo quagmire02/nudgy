@@ -18,3 +18,17 @@ pub struct SessionView {
     /// Consecutive days with a session.
     pub day_streak: u32,
 }
+
+/// Personalised AI lines, for the settings UI.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+pub struct CloudStatus {
+    /// A line-writer address is built in (or set with NUDGY_API_URL).
+    pub configured: bool,
+    /// The user allows AI lines (`Settings::cloud_lines`).
+    pub enabled: bool,
+    /// From the last answer: lines used today, the cap, and when it resets.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quota: Option<crate::Quota>,
+}

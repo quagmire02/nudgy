@@ -105,6 +105,9 @@ export function SettingsTab(props: {
       </Card>
 
       <Card title="AI lines" icon={Bot}>
+        {cloud?.configured && cloud.lastError && settings.cloudLines && (
+          <p className="warn">Can't reach the line writer ({cloud.lastError}). The panda uses its built-in lines until it's back.</p>
+        )}
         {cloud?.configured ? (
           <Toggle
             checked={settings.cloudLines}

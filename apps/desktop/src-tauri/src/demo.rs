@@ -21,7 +21,7 @@ pub fn trigger(kind: TriggerKind, tone: Tone) -> Trigger {
             goal: Some("Thesis chapter 3".into()),
             app: Some("instagram.com".into()),
             category: Some(Category::Social),
-            minutes: Some(6),
+            minutes: Some(sample_minutes(kind)),
             streak: Some(3),
             nudge_level: 1,
             deadline: Some(DeadlineHint { title: "Quiz".into(), in_hours: 30 }),
@@ -29,5 +29,18 @@ pub fn trigger(kind: TriggerKind, tone: Tone) -> Trigger {
         animation: p.animation,
         replies: p.replies,
         ai_eligible: false,
+    }
+}
+
+/// A believable number for each moment: a 5-minute break, a 15-minute snooze.
+fn sample_minutes(kind: TriggerKind) -> u32 {
+    match kind {
+        TriggerKind::BreakStart | TriggerKind::BreakOver | TriggerKind::BreakOverrun => 5,
+        TriggerKind::SnoozeAck | TriggerKind::SnoozeBackoff => 15,
+        TriggerKind::Streak25 => 25,
+        TriggerKind::Streak45 => 45,
+        TriggerKind::Streak90 => 90,
+        TriggerKind::SessionEnd | TriggerKind::GoalReached => 50,
+        _ => 6,
     }
 }

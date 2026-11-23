@@ -74,7 +74,7 @@ fn on_menu(app: &AppHandle, id: &str) {
             let paused = core.activity.lock().unwrap().as_ref().is_some_and(|s| s.is_paused());
             actions::set_tracking_paused(app, !paused);
         }
-        "quit" => app.exit(0),
+        "quit" => actions::quit(app),
         _ => {}
     }
 }

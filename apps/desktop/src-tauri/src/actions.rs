@@ -2,11 +2,15 @@
 //! window. App-level ones (hiding the panda, pausing tracking)
 //! are handled here; everything about the session goes to the engine.
 
-use nudgy_shared::UserAction;
+use nudgy_shared::{Goal, UserAction};
 use tauri::{AppHandle, Manager};
 
 use crate::brain::Msg;
 use crate::{Core, overlay};
+
+const MAX_GOAL_CHARS: usize = 80;
+const MIN_SESSION_MIN: u32 = 5;
+const MAX_SESSION_MIN: u32 = 8 * 60;
 
 pub fn open_main(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
@@ -50,8 +54,25 @@ pub fn send(app: &AppHandle, msg: Msg) {
     }
 }
 
+/// "Quit Nudgy": saves everything off the main thread (see `crate::shutdown`), then exits.
+pub fn quit(app: &AppHandle) {
+    let app = app.clone();
+    std::thread::spawn(move || {
+        crate::shutdown(&app);
+        app.exit(0);
+    });
+}
+
 pub fn apply(app: &AppHandle, action: UserAction) {
     match action {
+        // The window caps goals at 80 characters; anything else calling in gets the same limits.
+        UserAction::StartSession { goal } => {
+            let text: String = goal.text.trim().chars().take(MAX_GOAL_CHARS).collect();
+            if !text.is_empty() {
+                let minutes = goal.minutes.clamp(MIN_SESSION_MIN, MAX_SESSION_MIN);
+                send(app, Msg::Action(UserAction::StartSession { goal: Goal { text, minutes } }));
+            }
+        }
         UserAction::SetTrackingPaused { paused } => {
             set_tracking_paused(app, paused);
         }

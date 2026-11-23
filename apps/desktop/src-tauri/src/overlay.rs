@@ -215,13 +215,29 @@ fn spawn_cursor_watch(app: AppHandle) {
                 let inside = core.overlay.regions.lock().unwrap().iter().any(|r| r.contains(x, y));
                 if inside != interactive {
                     interactive = inside;
-                    if let Some(window) = app.get_webview_window(LABEL) {
-                        let _ = window.set_ignore_cursor_events(!inside);
-                    }
+                    set_click_through(hwnd, !inside);
                 }
             }
         })
         .expect("spawn overlay cursor thread");
+}
+
+/// Turns click-through on or off by flipping `WS_EX_TRANSPARENT` directly.
+/// Not through Tauri: the window is shown with a raw `ShowWindow`, so tao
+/// still believes it is hidden, and any tao style change (such as
+/// `set_ignore_cursor_events`) re-applies "hidden" and the panda vanishes.
+/// `WS_EX_LAYERED` stays on from creation; the webview draws fine with it.
+#[cfg(windows)]
+fn set_click_through(hwnd: windows::Win32::Foundation::HWND, on: bool) {
+    use windows::Win32::UI::WindowsAndMessaging::{GWL_EXSTYLE, GetWindowLongPtrW, SetWindowLongPtrW, WS_EX_TRANSPARENT};
+    unsafe {
+        let style = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+        let flag = WS_EX_TRANSPARENT.0 as isize;
+        let wanted = if on { style | flag } else { style & !flag };
+        if wanted != style {
+            SetWindowLongPtrW(hwnd, GWL_EXSTYLE, wanted);
+        }
+    }
 }
 
 fn save_settled_position(app: &AppHandle, core: &Core) {

@@ -43,6 +43,8 @@ pub struct Cloud {
     agent: Agent,
     credentials: Box<dyn Credentials>,
     quota: Mutex<Option<Quota>>,
+    /// Why the last request failed, until one succeeds again.
+    last_error: Mutex<Option<String>>,
 }
 
 const LINE_TIMEOUT: Duration = Duration::from_millis(1500);
@@ -61,12 +63,17 @@ impl Cloud {
             return Err(CloudError::Insecure);
         }
         let agent: Agent = Agent::config_builder().http_status_as_error(false).build().into();
-        Ok(Cloud { base, agent, credentials, quota: Mutex::new(None) })
+        Ok(Cloud { base, agent, credentials, quota: Mutex::new(None), last_error: Mutex::new(None) })
     }
 
     /// The last quota the server reported.
     pub fn quota(&self) -> Option<Quota> {
         *self.quota.lock().unwrap()
+    }
+
+    /// Why the last line request failed, if the most recent one did.
+    pub fn last_error(&self) -> Option<String> {
+        self.last_error.lock().unwrap().clone()
     }
 
     /// True if the daily quota is known to be spent until its reset.
@@ -79,14 +86,19 @@ impl Cloud {
         if let Some(q) = self.quota().filter(|_| self.exhausted(now)) {
             return Err(CloudError::QuotaExceeded(q));
         }
-        match self.try_line(request) {
+        let result = match self.try_line(request) {
             // The token was revoked or the server's secret changed: register again, once.
             Err(CloudError::Unauthorized) => {
                 self.credentials.set_token(None);
                 self.try_line(request)
             }
             other => other,
-        }
+        };
+        *self.last_error.lock().unwrap() = match &result {
+            Ok(_) | Err(CloudError::QuotaExceeded(_)) => None,
+            Err(e) => Some(e.to_string()),
+        };
+        result
     }
 
     fn try_line(&self, request: &LineRequest) -> Result<LineResponse, CloudError> {

@@ -5,6 +5,7 @@
 use std::path::PathBuf;
 use std::sync::mpsc::{self, RecvTimeoutError, Sender};
 use std::sync::{Arc, Mutex};
+use std::thread::JoinHandle;
 use std::time::Duration;
 
 use chrono::Local;
@@ -12,7 +13,7 @@ use nudgy_activity::now_ms;
 use nudgy_engine::embed::MiniLm;
 use nudgy_engine::streak::day_streak;
 use nudgy_engine::{Classifier, Engine, EngineSettings, Input, Lexical, Output, Similarity};
-use nudgy_shared::{ActivityEvent, DeadlineHint, SessionState, SessionView, Settings, UnixMs, UserAction};
+use nudgy_shared::{ActivityEvent, DeadlineHint, Session, SessionState, SessionView, Settings, UnixMs, UserAction};
 use tauri::{AppHandle, Emitter, Manager};
 
 use crate::{Core, overlay, speech};
@@ -25,12 +26,15 @@ pub enum Msg {
     Deadlines(Vec<DeadlineHint>),
     Action(UserAction),
     Settings(Settings),
+    /// "Delete my data" ran: forget the last session and recount the streak.
+    DataDeleted,
     Stop,
 }
 
 pub struct Brain {
     tx: Sender<Msg>,
     view: Arc<Mutex<SessionView>>,
+    thread: Option<JoinHandle<()>>,
 }
 
 impl Brain {
@@ -40,6 +44,14 @@ impl Brain {
 
     pub fn view(&self) -> SessionView {
         self.view.lock().unwrap().clone()
+    }
+
+    /// Ends a running session (so it is saved complete) and waits for the thread.
+    pub fn stop(mut self) {
+        let _ = self.tx.send(Msg::Stop);
+        if let Some(thread) = self.thread.take() {
+            let _ = thread.join();
+        }
     }
 }
 
@@ -79,15 +91,16 @@ fn streak_now(app: &AppHandle) -> u32 {
 
 pub fn start(app: &AppHandle) -> Brain {
     let core = app.state::<Core>();
-    let overrides = core
+    let now = now_ms();
+    let (overrides, last_session) = core
         .activity
         .lock()
         .unwrap()
         .as_ref()
-        .and_then(|a| {
+        .map(|a| {
             a.with_store(|s| {
                 let _ = s.close_dangling_sessions();
-                s.overrides().ok()
+                (s.overrides().unwrap_or_default(), last_ended(s.sessions_between(now - 30 * DAY_MS, now + DAY_MS).unwrap_or_default()))
             })
         })
         .unwrap_or_default();
@@ -100,7 +113,7 @@ pub fn start(app: &AppHandle) -> Brain {
     let settings = core.settings.lock().unwrap().clone();
     let mut engine = Engine::new(Classifier::new(similarities), overrides, engine_settings(&settings, streak));
 
-    let view = Arc::new(Mutex::new(SessionView { day_streak: streak, ..SessionView::default() }));
+    let view = Arc::new(Mutex::new(SessionView { day_streak: streak, last_session, ..SessionView::default() }));
     let (tx, rx) = mpsc::channel::<Msg>();
 
     // Activity from the watchers.
@@ -116,7 +129,7 @@ pub fn start(app: &AppHandle) -> Brain {
     }
 
     let (app, shared_view) = (app.clone(), view.clone());
-    std::thread::Builder::new()
+    let thread = std::thread::Builder::new()
         .name("nudgy-brain".into())
         .spawn(move || {
             loop {
@@ -133,6 +146,14 @@ pub fn start(app: &AppHandle) -> Brain {
                         engine.set_settings(engine_settings(&settings, streak));
                         continue;
                     }
+                    Ok(Msg::DataDeleted) => {
+                        let mut settings = engine.settings().clone();
+                        settings.day_streak = streak_now(&app);
+                        engine.set_settings(settings);
+                        shared_view.lock().unwrap().last_session = None;
+                        apply(&app, &mut engine, &shared_view, Vec::new(), now, false);
+                        continue;
+                    }
                     Ok(Msg::Stop) | Err(RecvTimeoutError::Disconnected) => {
                         // Quitting mid-session ends it, so it's saved complete.
                         let out = engine.handle(Input::Action(UserAction::EndSession), now);
@@ -147,7 +168,12 @@ pub fn start(app: &AppHandle) -> Brain {
         })
         .expect("spawn brain thread");
 
-    Brain { tx, view }
+    Brain { tx, view, thread: Some(thread) }
+}
+
+/// The most recent finished session, for the "Last session" card after a restart.
+fn last_ended(sessions: Vec<Session>) -> Option<Session> {
+    sessions.into_iter().filter(|s| s.state == SessionState::Ended).max_by_key(|s| s.started)
 }
 
 fn apply(app: &AppHandle, engine: &mut Engine, view: &Mutex<SessionView>, out: Vec<Output>, now: UnixMs, quitting: bool) {

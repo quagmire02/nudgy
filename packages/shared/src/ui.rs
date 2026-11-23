@@ -34,6 +34,9 @@ pub struct CloudStatus {
     /// From the last answer: lines used today, the cap, and when it resets.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quota: Option<crate::Quota>,
+    /// Why the last AI line failed (offline, server error), until one works again.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_error: Option<String>,
 }
 
 /// The weekly report: totals only, no window titles or URLs.

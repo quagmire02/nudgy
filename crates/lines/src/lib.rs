@@ -145,7 +145,7 @@ pub fn slot_values(context: &TriggerContext) -> HashMap<Slot, String> {
 /// "in 5 hours", "tomorrow", "in 3 days".
 pub fn when(in_hours: u32) -> String {
     match in_hours {
-        0 => "now".into(),
+        0 => "very soon".into(),
         1 => "in an hour".into(),
         2..=23 => format!("in {in_hours} hours"),
         24..=47 => "tomorrow".into(),
@@ -191,8 +191,25 @@ fn speakable_app(app: &str) -> String {
         ("chess.com", "Chess.com"), ("amazon.com", "Amazon"), ("cricbuzz.com", "Cricbuzz"),
         ("espncricinfo.com", "Cricinfo"), ("9gag.com", "9GAG"), ("quora.com", "Quora"),
     ];
-    let name = BRANDS.iter().find(|(d, _)| *d == app).map(|(_, b)| b.to_string()).unwrap_or_else(|| app.to_string());
+    let name = BRANDS
+        .iter()
+        .find(|(d, _)| *d == app)
+        .map(|(_, b)| b.to_string())
+        .unwrap_or_else(|| bare_app_name(app));
     truncate_words(&name, 25)
+}
+
+/// Apps known only by their lower-case exe name ("vlc") read as a name ("VLC").
+fn bare_app_name(app: &str) -> String {
+    const ACRONYMS: &[&str] = &["vlc", "obs", "mpv", "gta5", "aimp"];
+    if app.contains('.') || app.chars().any(|c| c.is_uppercase()) {
+        return app.to_string();
+    }
+    if ACRONYMS.contains(&app) {
+        return app.to_uppercase();
+    }
+    let mut chars = app.chars();
+    chars.next().map(|first| first.to_uppercase().chain(chars).collect()).unwrap_or_default()
 }
 
 /// Fills `text`'s slots; `None` if a slot has no value.

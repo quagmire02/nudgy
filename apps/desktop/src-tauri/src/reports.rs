@@ -17,8 +17,13 @@ const DAY_MS: i64 = 86_400_000;
 
 pub fn weekly(app: &AppHandle) -> WeeklyReport {
     let core = app.state::<Core>();
+    // Today and the six calendar days before it, local time.
     let to = now_ms();
-    let from = to - 7 * DAY_MS;
+    let first_day = Local::now().date_naive() - chrono::Days::new(6);
+    let from = first_day
+        .and_hms_opt(0, 0, 0)
+        .and_then(|t| Local.from_local_datetime(&t).earliest())
+        .map_or(to - 7 * DAY_MS, |t| t.timestamp_millis());
     let sessions = core
         .activity
         .lock()
@@ -28,17 +33,16 @@ pub fn weekly(app: &AppHandle) -> WeeklyReport {
         .unwrap_or_default();
 
     let mut days: Vec<DayTotal> = (0..7)
-        .map(|i| {
-            let day = Local.timestamp_millis_opt(from + (i + 1) * DAY_MS).single().map(|t| t.format("%a").to_string());
-            DayTotal { label: day.unwrap_or_default(), focused: 0 }
-        })
+        .map(|i| DayTotal { label: (first_day + chrono::Days::new(i)).format("%a").to_string(), focused: 0 })
         .collect();
     let mut top: HashMap<String, u32> = HashMap::new();
     let (mut focused, mut distracting) = (0u32, 0u32);
     for s in &sessions {
         focused += s.stats.focused;
         distracting += s.stats.distracting;
-        let index = ((s.started - from) / DAY_MS).clamp(0, 6) as usize;
+        // The local calendar day it started on (not 24-hour windows back from now).
+        let started = Local.timestamp_millis_opt(s.started).single().map(|t| t.date_naive());
+        let index = started.map_or(0, |d| (d - first_day).num_days()).clamp(0, 6) as usize;
         days[index].focused += s.stats.focused;
         for d in &s.stats.top_distractions {
             *top.entry(nudgy_lines::brand(&d.name)).or_default() += d.duration;

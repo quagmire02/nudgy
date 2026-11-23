@@ -32,6 +32,7 @@ pub fn cloud_status(core: &Core) -> CloudStatus {
         configured: core.cloud.is_some(),
         enabled: core.settings.lock().unwrap().cloud_lines,
         quota: core.cloud.as_ref().and_then(|c| c.quota()),
+        last_error: core.cloud.as_ref().and_then(|c| c.last_error()),
     }
 }
 

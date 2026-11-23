@@ -1,4 +1,5 @@
 mod actions;
+mod autostart;
 mod brain;
 mod cloud;
 mod demo;
@@ -65,7 +66,7 @@ fn update_settings(app: AppHandle, core: tauri::State<Core>, settings: Settings)
     if let Some(service) = core.activity.lock().unwrap().as_ref() {
         service.set_private_apps(settings.private_apps.clone());
     }
-    apply_autostart(&app, settings.autostart);
+    apply_autostart(&settings);
     actions::send(&app, brain::Msg::Settings(settings.clone()));
     overlay::push_state(&app);
     settings
@@ -106,8 +107,10 @@ fn set_tracking_paused(app: AppHandle, paused: bool) -> bool {
 }
 
 #[tauri::command]
-fn delete_activity_data(core: tauri::State<Core>) -> CommandResult<()> {
-    with_activity(&core, |s| s.delete_all().map_err(|e| e.to_string()))
+fn delete_activity_data(app: AppHandle, core: tauri::State<Core>) -> CommandResult<()> {
+    with_activity(&core, |s| s.delete_all().map_err(|e| e.to_string()))?;
+    actions::send(&app, brain::Msg::DataDeleted);
+    Ok(())
 }
 
 #[tauri::command]
@@ -223,21 +226,28 @@ fn follow_activity(app: &AppHandle) {
         .expect("spawn overlay context thread");
 }
 
-/// Start with Windows. Only installed builds register; a dev build would
-/// point the login entry at a debug exe in `target/`.
-fn apply_autostart(app: &AppHandle, enabled: bool) {
-    if cfg!(debug_assertions) {
-        return;
-    }
-    use tauri_plugin_autostart::ManagerExt;
-    let launcher = app.autolaunch();
-    let result = match (enabled, launcher.is_enabled().unwrap_or(false)) {
-        (true, false) => launcher.enable(),
-        (false, true) => launcher.disable(),
-        _ => Ok(()),
-    };
-    if let Err(e) = result {
+/// Start with Windows, once onboarding (where the user chooses) is done.
+fn apply_autostart(settings: &Settings) {
+    if settings.onboarded
+        && let Err(e) = autostart::set(settings.autostart)
+    {
         log::warn!("can't change start-with-Windows: {e}");
+    }
+}
+
+/// Saves a running session and closes the open activity event. Never on the
+/// main thread: the watchers read window titles, and for Nudgy's own windows
+/// (the tray menu, for one) that is a message only the main thread answers.
+/// Waiting for the watchers there is what used to hang Quit.
+pub fn shutdown(app: &AppHandle) {
+    let core = app.state::<Core>();
+    let brain = core.brain.lock().unwrap().take();
+    if let Some(brain) = brain {
+        brain.stop();
+    }
+    let service = core.activity.lock().unwrap().take();
+    if let Some(mut service) = service {
+        service.stop();
     }
 }
 
@@ -274,9 +284,13 @@ pub fn run() {
         // window (two instances would track and write the same database).
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| actions::open_main(app)))
         .plugin(tauri_plugin_notification::init())
-        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
         // Stdout and a rotating file in the app's log folder.
-        .plugin(tauri_plugin_log::Builder::new().level(log::LevelFilter::Info).build())
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .level(log::LevelFilter::Info)
+                .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
+                .build(),
+        )
         .setup(|app| {
             let store = Store::new(app.path().app_config_dir()?);
             let settings: Settings = store.load("settings.json");
@@ -301,7 +315,7 @@ pub fn run() {
             follow_activity(&handle);
             *app.state::<Core>().brain.lock().unwrap() = Some(brain::start(&handle));
             reminders::start_scheduler(&handle);
-            apply_autostart(&handle, settings.autostart);
+            apply_autostart(&settings);
             // After onboarding Nudgy starts in the tray; dev builds always show the window.
             if !settings.onboarded || cfg!(debug_assertions) {
                 actions::open_main(&handle);
@@ -347,16 +361,16 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building Nudgy")
         .run(|app, event| {
+            // Quit already shut down off the main thread. This covers anything
+            // else ending the app (Windows signing out), waiting at most 2 s.
             if let RunEvent::Exit = event {
-                // End a running session so it is saved complete.
-                if let Some(brain) = app.state::<Core>().brain.lock().unwrap().take() {
-                    brain.send(brain::Msg::Stop);
-                    std::thread::sleep(Duration::from_millis(300));
-                }
-                // Close the open event so the last seconds aren't lost.
-                if let Some(mut service) = app.state::<Core>().activity.lock().unwrap().take() {
-                    service.stop();
-                }
+                let (done_tx, done_rx) = std::sync::mpsc::channel();
+                let app = app.clone();
+                std::thread::spawn(move || {
+                    shutdown(&app);
+                    let _ = done_tx.send(());
+                });
+                let _ = done_rx.recv_timeout(Duration::from_secs(2));
             }
         });
 }

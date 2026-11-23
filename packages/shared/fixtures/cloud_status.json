@@ -1,4 +1,5 @@
 [
   { "configured": false, "enabled": true },
-  { "configured": true, "enabled": true, "quota": { "used": 20, "limit": 20, "resetsAt": 1792605600000 } }
+  { "configured": true, "enabled": true, "quota": { "used": 20, "limit": 20, "resetsAt": 1792605600000 } },
+  { "configured": true, "enabled": true, "lastError": "no network or the line writer didn't answer in time" }
 ]

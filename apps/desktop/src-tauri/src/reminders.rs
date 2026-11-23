@@ -22,9 +22,15 @@ const DUE_WINDOW_MS: UnixMs = 15 * 60_000;
 /// Deadlines this close shape nudges ("The quiz is in 2 days").
 const DEADLINE_HORIZON_MS: UnixMs = 72 * 3_600_000;
 
+/// Hours to go, rounded to the nearest hour: the 1-hour alert says "in an
+/// hour", not "now" (0 reads as "very soon").
 fn hours_until(at: UnixMs, now: UnixMs) -> u32 {
-    ((at - now).max(0) / 3_600_000) as u32
+    (((at - now).max(0) + 1_800_000) / 3_600_000) as u32
 }
+
+/// When an event is too close for the evening-before and hour-before alerts,
+/// one alert 10 minutes before (or right away).
+const LAST_MINUTE_MS: UnixMs = 10 * 60_000;
 
 pub fn trigger(app: &AppHandle, kind: TriggerKind, reminder: &Reminder) -> Trigger {
     let tone = app.state::<Core>().settings.lock().unwrap().tone;
@@ -52,7 +58,10 @@ fn with_store<T>(app: &AppHandle, f: impl FnOnce(&mut nudgy_activity::Store) -> 
 
 pub fn save(app: &AppHandle, draft: ReminderDraft) -> Result<Reminder, String> {
     let now = now_ms();
-    let reminder = Reminder {
+    if draft.event_at <= now {
+        return Err("That date has passed.".into());
+    }
+    let mut reminder = Reminder {
         id: format!("{now}"),
         title: draft.title.trim().chars().take(80).collect(),
         place: draft.place.filter(|p| !p.trim().is_empty()),
@@ -67,6 +76,10 @@ pub fn save(app: &AppHandle, draft: ReminderDraft) -> Result<Reminder, String> {
         created: now,
         cancelled: false,
     };
+    if reminder.alerts.is_empty() {
+        let at = (reminder.event_at - LAST_MINUTE_MS).max(now + 5_000);
+        reminder.alerts.push(ReminderAlert { at, status: AlertStatus::Pending });
+    }
     with_store(app, |s| s.save_reminder(&reminder)).ok_or("Storage isn't running.")?.map_err(|e| e.to_string())?;
     speech::present(app, trigger(app, TriggerKind::ReminderConfirm, &reminder), None);
     update_deadlines(app);
@@ -138,18 +151,21 @@ fn deliver(app: &AppHandle) {
     }
 }
 
-/// Copies the current selection with a simulated Ctrl+C, restoring the
-/// clipboard text afterwards.
+/// Copies the current selection with a simulated Ctrl+C, then puts back what
+/// was on the clipboard (text or an image). If nothing gets copied, the
+/// clipboard is never touched.
 #[cfg(windows)]
 pub fn copy_selection() -> Option<String> {
+    use windows::Win32::System::DataExchange::GetClipboardSequenceNumber;
     use windows::Win32::UI::Input::KeyboardAndMouse::{
         GetAsyncKeyState, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_KEYUP, SendInput,
         VIRTUAL_KEY, VK_C, VK_CONTROL, VK_D, VK_MENU,
     };
 
     let mut clipboard = arboard::Clipboard::new().ok()?;
-    let previous = clipboard.get_text().ok();
-    let _ = clipboard.clear();
+    let previous_text = clipboard.get_text().ok();
+    let previous_image = if previous_text.is_none() { clipboard.get_image().ok() } else { None };
+    let before = unsafe { GetClipboardSequenceNumber() };
     // Wait for the user to let go of Ctrl+Alt+D, or the copy becomes Ctrl+Alt+C.
     for _ in 0..50 {
         let down = [VK_MENU, VK_CONTROL, VK_D].iter().any(|k| unsafe { GetAsyncKeyState(k.0 as i32) } < 0);
@@ -166,24 +182,21 @@ pub fn copy_selection() -> Option<String> {
     };
     let inputs = [key(VK_CONTROL, false), key(VK_C, false), key(VK_C, true), key(VK_CONTROL, true)];
     unsafe { SendInput(&inputs, size_of::<INPUT>() as i32) };
-    let mut text = None;
-    for _ in 0..25 {
+    // The sequence number changes once the app in front has copied something.
+    let copied = (0..25).any(|_| {
         std::thread::sleep(Duration::from_millis(20));
-        if let Ok(t) = clipboard.get_text()
-            && !t.trim().is_empty()
-        {
-            text = Some(t);
-            break;
-        }
+        (unsafe { GetClipboardSequenceNumber() }) != before
+    });
+    if !copied {
+        return None;
     }
-    match previous {
-        Some(p) => {
-            let _ = clipboard.set_text(p);
-        }
-        None => {
-            let _ = clipboard.clear();
-        }
-    }
+    std::thread::sleep(Duration::from_millis(30));
+    let text = clipboard.get_text().ok().filter(|t| !t.trim().is_empty());
+    let _ = match (previous_text, previous_image) {
+        (Some(t), _) => clipboard.set_text(t),
+        (None, Some(image)) => clipboard.set_image(image),
+        (None, None) => clipboard.clear(),
+    };
     text.map(|t| t.chars().take(2_000).collect())
 }
 
@@ -202,15 +215,24 @@ pub fn export_ics(app: &AppHandle) -> Result<String, String> {
     let stamp = |at: UnixMs| {
         chrono::DateTime::from_timestamp_millis(at).map(|t| t.format("%Y%m%dT%H%M%SZ").to_string()).unwrap_or_default()
     };
-    let escape = |s: &str| s.replace('\\', "\\\\").replace(';', "\\;").replace(',', "\\,").replace('\n', " ");
+    // All-day events are whole local days, as calendars expect.
+    let day = |at: UnixMs| {
+        chrono::DateTime::from_timestamp_millis(at)
+            .map(|t| t.with_timezone(&chrono::Local).format("%Y%m%d").to_string())
+            .unwrap_or_default()
+    };
+    let escape = |s: &str| s.replace('\\', "\\\\").replace(';', "\\;").replace(',', "\\,").replace(['\r', '\n'], " ");
     let mut ics = String::from("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Nudgy//Reminders//EN\r\n");
     for r in upcoming(app) {
+        let (start, end) = if r.all_day {
+            (format!("DTSTART;VALUE=DATE:{}", day(r.event_at)), format!("DTEND;VALUE=DATE:{}", day(r.event_at + 86_400_000)))
+        } else {
+            (format!("DTSTART:{}", stamp(r.event_at)), format!("DTEND:{}", stamp(r.event_at + 3_600_000)))
+        };
         ics.push_str(&format!(
-            "BEGIN:VEVENT\r\nUID:{}@nudgy\r\nDTSTAMP:{}\r\nDTSTART:{}\r\nDTEND:{}\r\nSUMMARY:{}\r\n{}END:VEVENT\r\n",
+            "BEGIN:VEVENT\r\nUID:{}@nudgy\r\nDTSTAMP:{}\r\n{start}\r\n{end}\r\nSUMMARY:{}\r\n{}END:VEVENT\r\n",
             r.id,
             stamp(r.created),
-            stamp(r.event_at),
-            stamp(r.event_at + 3_600_000),
             escape(&r.title),
             r.place.as_deref().map(|p| format!("LOCATION:{}\r\n", escape(p))).unwrap_or_default(),
         ));

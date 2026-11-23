@@ -662,6 +662,8 @@ impl Engine {
         }
         self.overrides.clear_titles();
         self.classification = None;
+        // A snooze belongs to the session it was asked in.
+        self.snooze_until = None;
         let session = empty_session(&goal, self.settings.tone, now);
         self.run = Some(Run {
             goal_norm: normalize_goal(&goal.text),

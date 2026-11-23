@@ -178,9 +178,20 @@ fn small_numbers_read_naturally() {
     let values = HashMap::from([(Slot::Minutes, "1".to_string()), (Slot::Streak, "1".to_string())]);
     assert_eq!(fill("{minutes} minutes of focus.", &values).unwrap(), "1 minute of focus.");
     assert_eq!(fill("Streak now {streak} days.", &values).unwrap(), "Streak now 1 day.");
+    assert_eq!(when(0), "very soon");
+    assert_eq!(when(1), "in an hour");
     assert_eq!(when(5), "in 5 hours");
     assert_eq!(when(30), "tomorrow");
     assert_eq!(when(80), "in 3 days");
+}
+
+#[test]
+fn bare_exe_names_read_as_names() {
+    assert_eq!(brand("vlc"), "VLC");
+    assert_eq!(brand("steam"), "Steam");
+    assert_eq!(brand("Visual Studio Code"), "Visual Studio Code");
+    assert_eq!(brand("instagram.com"), "Instagram");
+    assert_eq!(brand("example.org"), "example.org");
 }
 
 #[test]

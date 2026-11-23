@@ -1,49 +1,10 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import * as chrono from "chrono-node";
 import { CalendarDays, CalendarPlus, Check, ClipboardPaste, MapPin, ScrollText, X } from "lucide-react";
 import type { Reminder, ReminderDraft } from "@nudgy/shared";
+import { type ReminderForm as Form, parse, remindTimes } from "./reminderText";
 import { Card, Kbd } from "./ui";
-
-interface Form {
-  title: string;
-  place: string;
-  when: string; // datetime-local value
-  allDay: boolean;
-}
-
-const pad = (n: number) => String(n).padStart(2, "0");
-const toLocalInput = (d: Date) =>
-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-
-/** Date, time, title and place from free text, day-first (Bangladesh). */
-export function parse(text: string, now = new Date()): Form {
-  const [hit] = chrono.en.GB.parse(text, now, { forwardDate: true });
-  const date = hit?.start.date();
-  const allDay = hit ? !hit.start.isCertain("hour") : false;
-  if (date && allDay) date.setHours(9, 0, 0, 0);
-  const rest = hit ? text.replace(hit.text, " ") : text;
-  const place = /\b(room|hall|lab|building|block)\s+[\w-]+/i.exec(rest)?.[0] ?? "";
-  const title = rest
-    .replace(place, " ")
-    .replace(/\b(on|at|by|from|is|due)\b\s*[,.:-]?\s*$/i, "")
-    .replace(/[\s,.:;-]+/g, " ")
-    .trim()
-    .split(" ")
-    .slice(0, 8)
-    .join(" ");
-  return { title: title || "Reminder", place, when: date ? toLocalInput(date) : "", allDay };
-}
-
-/** The evening before at 8 pm, and one hour before (or 8 am on the day). */
-function remindTimes(at: Date, allDay: boolean): number[] {
-  const evening = new Date(at);
-  evening.setDate(evening.getDate() - 1);
-  evening.setHours(20, 0, 0, 0);
-  const sameDay = allDay ? new Date(at).setHours(8, 0, 0, 0) : at.getTime() - 3_600_000;
-  return [evening.getTime(), sameDay].filter((t) => t > Date.now());
-}
 
 /** Reminder text from Ctrl+Alt+D, kept here so it survives switching tabs. */
 let pendingText: string | null = null;
@@ -72,6 +33,8 @@ export function Reminders({ toast }: { toast: (text: string) => void }) {
     return () => window.removeEventListener("nudgy:reminder-text", take);
   }, []);
 
+  const past = !!form?.when && new Date(form.when).getTime() <= Date.now();
+
   const save = async () => {
     if (!form?.when) return;
     const at = new Date(form.when);
@@ -84,7 +47,12 @@ export function Reminders({ toast }: { toast: (text: string) => void }) {
       warnings: at.getTime() < Date.now() ? ["past_date"] : [],
       parsedBy: "local",
     };
-    await invoke("save_reminder", { draft });
+    try {
+      await invoke("save_reminder", { draft });
+    } catch (e) {
+      toast(String(e));
+      return;
+    }
     setForm(null);
     setPaste("");
     toast("Saved. The panda wrote it on its scroll.");
@@ -127,9 +95,9 @@ export function Reminders({ toast }: { toast: (text: string) => void }) {
               <input value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })} placeholder="Optional" />
             </label>
             {!form.when && <p className="warn">No date found. Pick one above.</p>}
-            {form.when && new Date(form.when).getTime() < Date.now() && <p className="warn">That date has passed.</p>}
+            {past && <p className="warn">That date has passed. Pick a time that hasn&apos;t happened yet.</p>}
             <div className="buttons">
-              <button className="btn primary" onClick={save} disabled={!form.when}>
+              <button className="btn primary" onClick={save} disabled={!form.when || past}>
                 <Check size={15} /> Save reminder
               </button>
               <button className="btn ghost" onClick={() => setForm(null)}>

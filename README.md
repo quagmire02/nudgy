@@ -95,9 +95,10 @@ The art is `character/panda.svg` with CSS animations (`apps/desktop/src/overlay/
 
 ## Installing
 
-`pnpm --filter @nudgy/desktop tauri build` produces `target/release/bundle/nsis/Nudgy_0.1.0_x64-setup.exe` (about 86 MB, mostly the embedding model). It installs for the current user, no admin needed, and bundles the embedding model and the browser extension (the `extension` folder inside the install folder, for "Load unpacked"). Run `pnpm fetch-model` and `pnpm build:extension` first.
+`pnpm --filter @nudgy/desktop tauri build` produces `target/release/bundle/nsis/Nudgy_0.1.1_x64-setup.exe` (about 86 MB, mostly the embedding model). It installs for the current user, no admin needed, and bundles the embedding model and the browser extension (the `extension` folder inside the install folder, for "Load unpacked"). Run `pnpm fetch-model` and `pnpm build:extension` first.
 
 - First launch shows onboarding (personality, extension, start with Windows). After that Nudgy starts in the tray; Ctrl+Alt+N opens the window.
-- Start with Windows is on by default and only registers from an installed build.
+- Start with Windows is on by default. It is a per-user `Run` entry (never machine-wide), written only from an installed build and only after onboarding; the uninstaller removes it (`src-tauri/windows/hooks.nsh`).
+- Quit saves the running session and the open activity event on a background thread, then exits.
 - Release builds run under a strict Content Security Policy; dev builds don't.
 - **Not done:** code signing (SmartScreen warns until the installer is signed with your certificate) and auto-update (needs your updater signing key and somewhere to host releases). Both are config additions in `tauri.conf.json`.

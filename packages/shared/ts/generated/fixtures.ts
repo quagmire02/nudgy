@@ -712,6 +712,11 @@ export const cloudStatuses: CloudStatus[] = [
       "resetsAt": 1792605600000,
       "used": 20
     }
+  },
+  {
+    "configured": true,
+    "enabled": true,
+    "lastError": "no network or the line writer didn't answer in time"
   }
 ];
 

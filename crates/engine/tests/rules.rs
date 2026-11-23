@@ -166,6 +166,19 @@ fn reading_without_input_counts_as_focus_for_ten_minutes_then_asks() {
 }
 
 #[test]
+fn a_snooze_does_not_carry_into_the_next_session() {
+    let mut sim = Sim::new();
+    sim.start("Python project", 120);
+    sim.act(UserAction::Snooze { minutes: 15 });
+    sim.act(UserAction::EndSession);
+    sim.start("Thesis chapter 3", 120);
+    assert_eq!(sim.session().state, SessionState::Focusing);
+    assert_eq!(sim.session().mute_reason, None);
+    sim.run(&insta(), 6 * 60);
+    assert_eq!(nudges(&sim), 1, "the new session nudges as usual");
+}
+
+#[test]
 fn snoozes_back_off_after_three() {
     let mut sim = Sim::new();
     sim.start("Python project", 240);

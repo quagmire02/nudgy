@@ -16,4 +16,8 @@ enabled: boolean,
 /**
  * From the last answer: lines used today, the cap, and when it resets.
  */
-quota?: Quota, };
+quota?: Quota, 
+/**
+ * Why the last AI line failed (offline, server error), until one works again.
+ */
+lastError?: string, };

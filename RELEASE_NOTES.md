@@ -16,7 +16,7 @@ A sleepy panda in armor that sits on your screen and keeps you on task. Windows 
 - Quiet during calls and presentations. **Private:** nothing leaves your PC.
 
 ## Browser extension (optional)
-Tells Nudgy which website is open. Until it's in the stores: open `chrome://extensions` (or `edge://extensions`), turn on Developer mode, click **Load unpacked**, pick `%LOCALAPPDATA%\Nudgy\extension`, then press **Connect browser** in Nudgy's Settings and **Connect** in the extension.
+Lets Nudgy see which website you're on. It comes with the app: in Nudgy open **Settings → Browser → Open extension folder** and follow the steps shown there. Full guide: [EXTENSION.md](https://github.com/quagmire02/nudgy/blob/master/EXTENSION.md).
 
 ## Known issues
 - Over a fullscreen game or video during a session, the panda stays up to nudge you. Games in *exclusive* fullscreen mode draw over everything, so there the nudge shows when you alt-tab or leave the game; borderless/windowed fullscreen (the default in most games, including Fortnite) works.

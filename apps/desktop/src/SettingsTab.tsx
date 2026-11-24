@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Bot, Globe, Keyboard, Leaf, Megaphone, PawPrint, Flame, Settings2, Trash2, Wand2 } from "lucide-react";
 import type { CharacterSize, CloudStatus, ExtensionStatus, Settings, Tone, TriggerKind } from "@nudgy/shared";
+import { ExtensionSetup } from "./ExtensionSetup";
 import { Card, Kbd, Segmented, Toggle } from "./ui";
 
 const TEST_MOMENTS: [TriggerKind, string][] = [
@@ -109,6 +110,12 @@ export function SettingsTab(props: {
             </button>
           )}
         </div>
+        {!extension?.browsers.length && (
+          <details className="ext-help" open>
+            <summary>How to install the browser extension (2 minutes)</summary>
+            <ExtensionSetup />
+          </details>
+        )}
       </Card>
 
       <Card title="AI lines" icon={Bot}>

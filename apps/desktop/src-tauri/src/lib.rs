@@ -165,6 +165,18 @@ fn export_ics(app: AppHandle) -> CommandResult<String> {
     reminders::export_ics(&app)
 }
 
+/// The unpacked browser extension: bundled next to the app, or the repo's
+/// build in development. Opens it in Explorer and returns the path.
+#[tauri::command]
+fn open_extension_folder(app: AppHandle) -> CommandResult<String> {
+    let bundled = app.path().resource_dir().map(|d| d.join("extension")).ok();
+    let dev = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../extension/dist");
+    let folder = bundled.filter(|d| d.join("manifest.json").exists()).or_else(|| dev.canonicalize().ok()).ok_or("The extension folder is missing; reinstall Nudgy.")?;
+    let path = folder.display().to_string().trim_start_matches(r"\\?\").to_string();
+    let _ = std::process::Command::new("explorer.exe").arg(&path).spawn();
+    Ok(path)
+}
+
 #[tauri::command]
 fn cloud_status(core: tauri::State<Core>) -> CloudStatus {
     speech::cloud_status(&core)
@@ -331,6 +343,7 @@ pub fn run() {
             demo_moment,
             session_view,
             cloud_status,
+            open_extension_folder,
             weekly_report,
             save_share_card,
             save_reminder,

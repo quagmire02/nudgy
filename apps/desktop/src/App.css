@@ -465,6 +465,11 @@ code { padding: 1px 6px; border-radius: 6px; background: var(--surface-2); font-
 .tone-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: var(--surface-2); color: var(--green-deep); margin-bottom: 4px; }
 .tone-card.active .tone-icon { background: var(--surface); }
 
+.ext-help { margin-top: 8px; border-top: 1px dashed var(--border); padding-top: 10px; }
+.ext-help summary { cursor: pointer; font-weight: 800; color: var(--green-deep); }
+.ext-steps { margin: 10px 0 0; padding-left: 22px; display: grid; gap: 12px; line-height: 1.5; }
+.ext-steps .chips { margin-top: 6px; }
+.ext-steps .path { display: block; margin-top: 6px; word-break: break-all; font-size: 12px; }
 .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--steel); }
 .status-dot.on { background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
 .shortcuts { display: grid; grid-template-columns: 1fr auto; gap: 10px 16px; align-items: center; font-weight: 700; }

@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { ArrowRight, Globe, MessageCircle, Power, Sparkles } from "lucide-react";
 import type { Settings } from "@nudgy/shared";
 import { Panda } from "./overlay/Panda";
+import { ExtensionSetup } from "./ExtensionSetup";
 import { ToneCards } from "./SettingsTab";
 import { Kbd, Toggle } from "./ui";
 
@@ -40,13 +41,7 @@ export function Onboarding(props: { settings: Settings; update: (p: Partial<Sett
           <h2>
             <span className="step">2</span> Browser <span className="optional">optional</span>
           </h2>
-          <ol className="steps-list">
-            <li>
-              Open <code>chrome://extensions</code> (or <code>edge://extensions</code>) and turn on Developer mode.
-            </li>
-            <li>Click "Load unpacked" and pick the extension folder inside Nudgy's install folder.</li>
-            <li>Press Connect browser in Settings, then Connect in the extension.</li>
-          </ol>
+          <ExtensionSetup />
           <p className="hint">
             <Globe size={12} /> Without it, Nudgy still sees which app you're in, just not which website.
           </p>

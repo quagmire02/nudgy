@@ -4,7 +4,7 @@ A small armored panda on your Windows desktop that notices when you drift from y
 
 ![Nudgy during a focus session](docs/screenshots/focus.png)
 
-**Download:** grab the installer from the [Releases](../../releases) page (Windows 10/11, no admin needed). See [RELEASE_NOTES.md](RELEASE_NOTES.md) for features and the optional browser extension. Private by design: [PRIVACY.md](PRIVACY.md). MIT licensed; third-party credits in [CREDITS.md](CREDITS.md). How releases are published: [docs/publishing.md](docs/publishing.md).
+**Download:** grab the installer from the [Releases](../../releases) page (Windows 10/11, no admin needed). See [RELEASE_NOTES.md](RELEASE_NOTES.md) for features, and [EXTENSION.md](EXTENSION.md) to install the optional browser extension. Private by design: [PRIVACY.md](PRIVACY.md). MIT licensed; third-party credits in [CREDITS.md](CREDITS.md). How releases are published: [docs/publishing.md](docs/publishing.md).
 
 The rest of this README is for developers. Full spec: [Nudgy — Focus Buddy PoC Spec.md](Nudgy%20—%20Focus%20Buddy%20PoC%20Spec.md).
 

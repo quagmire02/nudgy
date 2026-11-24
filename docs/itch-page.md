@@ -32,6 +32,6 @@
 ### Install
 Download and run the installer (no admin needed). Windows may say *"Windows protected your PC"*. The app isn't code-signed yet, so click **More info → Run anyway**.
 
-Optional browser extension (shows which website you're on): see the install steps in the release notes.
+**Optional browser extension** (lets Nudgy see which website you're on): it comes with the app. Open Nudgy → **Settings → Browser → Open extension folder** and follow the 4 steps shown there. Full guide for Chrome, Edge, Brave and Firefox: https://github.com/quagmire02/nudgy/blob/master/EXTENSION.md
 
 Free and open source (MIT). Feedback welcome!
